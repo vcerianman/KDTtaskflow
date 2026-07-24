@@ -6,12 +6,7 @@ import com.kdt.taskflow.domain.ProjectStatus;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
-/**
- * Dữ liệu TRẢ VỀ cho client (output DTO).
- * <p>
- * Tách khỏi domain model để có toàn quyền kiểm soát cái gì lộ ra API — đây là
- * lý do mình không trả thẳng entity ra ngoài.
- */
+
 public record ProjectResponse(
         Long id,
         String name,

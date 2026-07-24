@@ -3,13 +3,7 @@ package com.kdt.taskflow.domain;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
-/**
- * Domain model của "project".
- * <p>
- * Đây chỉ là một POJO thuần — KHÔNG có annotation ORM nào cả. MyBatis đọc từng
- * dòng trong bảng {@code project} rồi map cột sang các thuộc tính ở đây
- * (xem {@code resultMap} trong ProjectMapper.xml).
- */
+
 public class Project {
 
     private Long id;

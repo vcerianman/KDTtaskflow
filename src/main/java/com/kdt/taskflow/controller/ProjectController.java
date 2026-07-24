@@ -15,9 +15,6 @@ import java.util.List;
 
 /**
  * Tầng Controller: điểm vào của mọi HTTP request cho tài nguyên "project".
- * <p>
- * Nhiệm vụ: nhận request, validate ({@code @Valid}), gọi Service, và trả
- * {@code ResponseEntity} với đúng status code. KHÔNG chứa business logic.
  */
 @RestController
 @RequestMapping("/api/projects")

@@ -7,25 +7,18 @@ import com.kdt.taskflow.domain.ProjectStatus;
 
 import java.time.LocalDate;
 
-/**
- * Dữ liệu client GỬI LÊN khi tạo/cập nhật project (input DTO).
- * <p>
- * Validate ngay ở biên bằng Bean Validation ({@code @NotBlank}, {@code @Size}...).
- * Không nhận {@code id}, {@code createdAt}, {@code updatedAt} từ client — những
- * field đó do hệ thống/DB quản lý.
- */
 public record ProjectRequest(
 
-        @NotBlank(message = "Tên project không được để trống")
-        @Size(min = 3, max = 120, message = "Tên project phải từ 3 đến 120 ký tự")
+        @NotBlank(message = "Project name cannot be null!")
+        @Size(min = 3, max = 6767, message = "Project name: 3 - 6767 characters")
         String name,
 
-        @Size(max = 2000, message = "Mô tả tối đa 2000 ký tự")
+        @Size(max = 3636, message = "Max 3636 characters")
         String description,
 
         ProjectStatus status,   // có thể null → service sẽ mặc định PLANNING
 
-        @NotBlank(message = "Owner không được để trống")
+        @NotBlank(message = "Owner cannot be null!")
         @Size(max = 120)
         String owner,
 
