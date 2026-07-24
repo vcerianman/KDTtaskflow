@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kdt.taskflow.mapper.ProjectMapper">
+
+    <!-- resultMap: khai báo tường minh cột (snake_case) -> thuộc tính (camelCase).
+         status là varchar <-> enum ProjectStatus (map theo name), timestamptz <-> OffsetDateTime. -->
+    <resultMap id="ProjectResult" type="Project">
+        <id     property="id"          column="id"/>
+        <result property="name"        column="name"/>
+        <result property="description" column="description"/>
+        <result property="status"      column="status"/>
+        <result property="owner"       column="owner"/>
+        <result property="startDate"   column="start_date"/>
+        <result property="dueDate"     column="due_date"/>
+        <result property="createdAt"   column="created_at"/>
+        <result property="updatedAt"   column="updated_at"/>
+    </resultMap>
+
+    <!-- Danh sách cột dùng lại nhiều nơi -->
+    <sql id="columns">
+        id, name, description, status, owner, start_date, due_date, created_at, updated_at
+    </sql>
+
+    <!-- CREATE: useGeneratedKeys lấy id do DB sinh, gán ngược vào project.id.
+         created_at/updated_at để DB tự set bằng DEFAULT now(). -->
+    <insert id="insert" parameterType="Project" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO project (name, description, status, owner, start_date, due_date)
+        VALUES (#{name}, #{description}, #{status}, #{owner}, #{startDate}, #{dueDate})
+    </insert>
+
+    <!-- READ one -->
+    <select id="findById" resultMap="ProjectResult">
+        SELECT <include refid="columns"/>
+        FROM project
+        WHERE id = #{id}
+    </select>
+
+    <!-- READ many + Dynamic SQL: lọc động theo status và keyword.
+         Chú ý: dùng #{keyword} (an toàn) ghép với '%' trong SQL, KHÔNG dùng ${}. -->
+    <select id="search" resultMap="ProjectResult">
+        SELECT <include refid="columns"/>
+        FROM project
+        <where>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (name ILIKE '%' || #{keyword} || '%'
+                OR description ILIKE '%' || #{keyword} || '%')
+            </if>
+        </where>
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- UPDATE: cập nhật updated_at = now() ngay trong câu lệnh -->
+    <update id="update" parameterType="Project">
+        UPDATE project
+        SET name        = #{name},
+        description = #{description},
+        status      = #{status},
+        owner       = #{owner},
+        start_date  = #{startDate},
+        due_date    = #{dueDate},
+        updated_at  = now()
+        WHERE id = #{id}
+    </update>
+
+    <!-- DELETE -->
+    <delete id="deleteById">
+        DELETE FROM project WHERE id = #{id}
+    </delete>
+
+</mapper>
