@@ -6,7 +6,7 @@
 
     <!-- resultMap: khai báo tường minh cột (snake_case) -> thuộc tính (camelCase).
          status là varchar <-> enum ProjectStatus (map theo name), timestamptz <-> OffsetDateTime. -->
-    <resultMap id="ProjectResult" type="Project">
+    <resultMap id="ProjectResult" type="com.kdt.taskflow.domain.Project">
         <id     property="id"          column="id"/>
         <result property="name"        column="name"/>
         <result property="description" column="description"/>
@@ -25,7 +25,7 @@
 
     <!-- CREATE: useGeneratedKeys lấy id do DB sinh, gán ngược vào project.id.
          created_at/updated_at để DB tự set bằng DEFAULT now(). -->
-    <insert id="insert" parameterType="Project" useGeneratedKeys="true" keyProperty="id">
+    <insert id="insert" parameterType="com.kdt.taskflow.domain.Project" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO project (name, description, status, owner, start_date, due_date)
         VALUES (#{name}, #{description}, #{status}, #{owner}, #{startDate}, #{dueDate})
     </insert>
@@ -55,7 +55,7 @@
     </select>
 
     <!-- UPDATE: cập nhật updated_at = now() ngay trong câu lệnh -->
-    <update id="update" parameterType="Project">
+    <update id="update" parameterType="com.kdt.taskflow.domain.Project">
         UPDATE project
         SET name        = #{name},
         description = #{description},
