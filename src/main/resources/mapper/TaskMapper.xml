@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kdt.taskflow.mapper.TaskMapper">
+
+    <resultMap id="TaskResult" type="com.kdt.taskflow.domain.Task">
+        <id     property="id"          column="id"/>
+        <result property="projectId"   column="project_id"/>
+        <result property="title"       column="title"/>
+        <result property="description" column="description"/>
+        <result property="status"      column="status"/>
+        <result property="priority"    column="priority"/>
+        <result property="assignee"    column="assignee"/>
+        <result property="dueDate"     column="due_date"/>
+        <result property="createdAt"   column="created_at"/>
+        <result property="updatedAt"   column="updated_at"/>
+    </resultMap>
+
+    <sql id="columns">
+        id, project_id, title, description, status, priority, assignee, due_date, created_at, updated_at
+    </sql>
+
+    <insert id="insert" parameterType="com.kdt.taskflow.domain.Task" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO task (project_id, title, description, status, priority, assignee, due_date)
+        VALUES (#{projectId}, #{title}, #{description}, #{status}, #{priority}, #{assignee}, #{dueDate})
+    </insert>
+
+    <select id="findById" resultMap="TaskResult">
+        SELECT <include refid="columns"/>
+        FROM task
+        WHERE id = #{id}
+    </select>
+
+    <select id="search" resultMap="TaskResult">
+        SELECT <include refid="columns"/>
+        FROM task
+        <where>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="priority != null">
+                AND priority = #{priority}
+            </if>
+            <if test="projectId != null">
+                AND project_id = #{projectId}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (title ILIKE '%' || #{keyword} || '%'
+                OR description ILIKE '%' || #{keyword} || '%')
+            </if>
+        </where>
+        ORDER BY created_at DESC
+    </select>
+
+    <update id="update" parameterType="com.kdt.taskflow.domain.Task">
+        UPDATE task
+        SET title       = #{title},
+            description = #{description},
+            status      = #{status},
+            priority    = #{priority},
+            assignee    = #{assignee},
+            due_date    = #{dueDate},
+            updated_at  = now()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM task WHERE id = #{id}
+    </delete>
+
+</mapper>
