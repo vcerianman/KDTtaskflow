@@ -16,6 +16,10 @@ public record UserRequest(
         @Size(max = 120, message = "Email max 120 characters")
         String email,
 
+        @NotBlank(message = "Password cannot be blank!")
+        @Size(min = 6, max = 100, message = "Password must be at least 6 characters")
+        String password,
+
         @Size(max = 120, message = "Full name max 120 characters")
         String fullName,
 
@@ -25,6 +29,7 @@ public record UserRequest(
         User u = new User();
         u.setUsername(username);
         u.setEmail(email);
+        u.setPassword(password);
         u.setFullName(fullName);
         u.setRole(role != null ? role : UserRole.MEMBER);
         return u;

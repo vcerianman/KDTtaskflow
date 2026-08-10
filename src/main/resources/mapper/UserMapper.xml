@@ -8,6 +8,7 @@
         <id     property="id"        column="id"/>
         <result property="username"  column="username"/>
         <result property="email"     column="email"/>
+        <result property="password"  column="password"/>
         <result property="fullName"  column="full_name"/>
         <result property="role"      column="role"/>
         <result property="createdAt" column="created_at"/>
@@ -15,12 +16,12 @@
     </resultMap>
 
     <sql id="columns">
-        id, username, email, full_name, role, created_at, updated_at
+        id, username, email, password, full_name, role, created_at, updated_at
     </sql>
 
     <insert id="insert" parameterType="com.kdt.taskflow.domain.User" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO app_user (username, email, full_name, role)
-        VALUES (#{username}, #{email}, #{fullName}, #{role})
+        INSERT INTO app_user (username, email, password, full_name, role)
+        VALUES (#{username}, #{email}, #{password}, #{fullName}, #{role})
     </insert>
 
     <select id="findById" resultMap="UserResult">
@@ -61,6 +62,7 @@
         UPDATE app_user
         SET username  = #{username},
             email     = #{email},
+            password  = #{password},
             full_name = #{fullName},
             role      = #{role},
             updated_at = now()

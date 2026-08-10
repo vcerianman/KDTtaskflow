@@ -45,8 +45,8 @@ public class TaskController {
     }
     
     /**
-     * GET /api/tasks — Lấy danh sách task, hỗ trợ lọc theo status, priority, projectId, assignee, assigner, và keyword.
-     * Ví dụ: /api/tasks?status=IN_PROGRESS&priority=HIGH&projectId=1&assignee=john_doe&keyword=feature
+     * GET /api/tasks - Get list of tasks - and sortable
+     * EX: /api/tasks?status=IN_PROGRESS&priority=HIGH&projectId=1&assignee=john_doe&keyword=feature
      */
     @GetMapping("/tasks")
     public List<TaskResponse> search(
@@ -60,7 +60,7 @@ public class TaskController {
         return taskService.search(status, priority, projectId, assignee, assigner, keyword);
     }
 
-    /** GET /api/tasks/{id} — Lấy chi tiết 1 task. Trả về 404 nếu không tìm thấy. */
+    /** GET /api/tasks/{id} — get a specific task - ret 404 if not found. */
     @GetMapping("/tasks/{id}")
     public TaskResponse getById(@PathVariable Long id) {
         return taskService.getById(id);

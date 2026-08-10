@@ -1,5 +1,6 @@
 package com.kdt.taskflow.service.impl;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.kdt.taskflow.domain.User;
@@ -16,9 +17,11 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserMapper userMapper) {
+    public UserServiceImpl(UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.userMapper = userMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -32,6 +35,7 @@ public class UserServiceImpl implements UserService {
         }
 
         User user = request.toDomain();
+        user.setPassword(passwordEncoder.encode(request.password()));
         userMapper.insert(user);
         return getById(user.getId());
     }
@@ -40,7 +44,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public UserResponse getById(Long id) {
         User user = userMapper.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy user id=" + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Cannot find user id=" + id));
         return UserResponse.from(user);
     }
 
@@ -57,7 +61,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserResponse update(Long id, UserRequest request) {
         User existing = userMapper.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy user id=" + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Cannot find user id=" + id));
 
         userMapper.findByUsername(request.username()).ifPresent(u -> {
             if (!u.getId().equals(id)) {
@@ -73,10 +77,15 @@ public class UserServiceImpl implements UserService {
 
         User user = request.toDomain();
         user.setId(id);
+        if (request.password() != null && !request.password().isBlank()) {
+            user.setPassword(passwordEncoder.encode(request.password()));
+        } else {
+            user.setPassword(existing.getPassword());
+        }
 
         int affected = userMapper.update(user);
         if (affected == 0) {
-            throw new ResourceNotFoundException("Không tìm thấy user id=" + id);
+            throw new ResourceNotFoundException("Cannot find user id=" + id);
         }
         return getById(id);
     }
@@ -86,7 +95,7 @@ public class UserServiceImpl implements UserService {
     public void delete(Long id) {
         int affected = userMapper.deleteById(id);
         if (affected == 0) {
-            throw new ResourceNotFoundException("Không tìm thấy user id=" + id);
+            throw new ResourceNotFoundException("Cannot find user id=" + id);
         }
     }
 }

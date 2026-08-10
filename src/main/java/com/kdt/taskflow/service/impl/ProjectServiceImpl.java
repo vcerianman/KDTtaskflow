@@ -36,7 +36,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional(readOnly = true)
     public ProjectResponse getById(Long id) {
         Project project = projectMapper.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy project id=" + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Cannot find project id=" + id));
         return ProjectResponse.from(project);
     }
 
@@ -57,7 +57,7 @@ public class ProjectServiceImpl implements ProjectService {
         int affected = projectMapper.update(project);
         if (affected == 0) {
             // update trả 0 dòng nghĩa là id không tồn tại
-            throw new ResourceNotFoundException("Không tìm thấy project id=" + id);
+            throw new ResourceNotFoundException("Cannot find project id=" + id);
         }
         return getById(id);
     }
@@ -67,7 +67,7 @@ public class ProjectServiceImpl implements ProjectService {
     public void delete(Long id) {
         int affected = projectMapper.deleteById(id);
         if (affected == 0) {
-            throw new ResourceNotFoundException("Không tìm thấy project id=" + id);
+            throw new ResourceNotFoundException("Cannot find project id=" + id);
         }
     }
 }

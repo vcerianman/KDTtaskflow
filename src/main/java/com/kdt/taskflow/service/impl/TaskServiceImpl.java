@@ -45,7 +45,7 @@ public class TaskServiceImpl implements TaskService {
         Long targetProjectId = projectId != null ? projectId : request.projectId();
         if (targetProjectId != null) {
             projectMapper.findById(targetProjectId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy project id=" + targetProjectId));
+                    .orElseThrow(() -> new ResourceNotFoundException("Cannot find task id=" + targetProjectId));
         }
 
         validateTaskUsers(request.assignee(), request.assigner());
@@ -59,7 +59,7 @@ public class TaskServiceImpl implements TaskService {
     @Transactional(readOnly = true)
     public TaskResponse getById(Long id) {
         Task task = taskMapper.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy task id=" + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Cannot find task id=" + id));
         return TaskResponse.from(task);
     }
 
@@ -76,7 +76,7 @@ public class TaskServiceImpl implements TaskService {
     @Transactional
     public TaskResponse update(Long id, TaskRequest request) {
         Task existing = taskMapper.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy task id=" + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Cannot find task id=" + id));
 
         validateTaskUsers(request.assignee(), request.assigner());
 
@@ -85,7 +85,7 @@ public class TaskServiceImpl implements TaskService {
 
         int affected = taskMapper.update(task);
         if (affected == 0) {
-            throw new ResourceNotFoundException("Không tìm thấy task id=" + id);
+            throw new ResourceNotFoundException("Cannot find task id=" + id);
         }
         return getById(id);
     }
@@ -95,7 +95,7 @@ public class TaskServiceImpl implements TaskService {
     public void delete(Long id) {
         int affected = taskMapper.deleteById(id);
         if (affected == 0) {
-            throw new ResourceNotFoundException("Không tìm thấy task id=" + id);
+            throw new ResourceNotFoundException("Cannot find task id=" + id);
         }
     }
 }
