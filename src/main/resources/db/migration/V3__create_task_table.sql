@@ -6,6 +6,7 @@ CREATE TABLE task (
     status      VARCHAR(20)  NOT NULL DEFAULT 'TODO',
     priority    VARCHAR(20)  NOT NULL DEFAULT 'MEDIUM',
     assignee    VARCHAR(120),
+    assigner    VARCHAR(120),
     due_date    DATE,
     created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
     updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),

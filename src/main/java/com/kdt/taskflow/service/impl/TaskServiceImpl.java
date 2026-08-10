@@ -10,6 +10,7 @@ import com.kdt.taskflow.dto.TaskResponse;
 import com.kdt.taskflow.exception.ResourceNotFoundException;
 import com.kdt.taskflow.mapper.ProjectMapper;
 import com.kdt.taskflow.mapper.TaskMapper;
+import com.kdt.taskflow.mapper.UserMapper;
 import com.kdt.taskflow.service.TaskService;
 
 import java.util.List;
@@ -19,10 +20,23 @@ public class TaskServiceImpl implements TaskService {
 
     private final TaskMapper taskMapper;
     private final ProjectMapper projectMapper;
+    private final UserMapper userMapper;
 
-    public TaskServiceImpl(TaskMapper taskMapper, ProjectMapper projectMapper) {
+    public TaskServiceImpl(TaskMapper taskMapper, ProjectMapper projectMapper, UserMapper userMapper) {
         this.taskMapper = taskMapper;
         this.projectMapper = projectMapper;
+        this.userMapper = userMapper;
+    }
+
+    private void validateTaskUsers(String assignee, String assigner) {
+        if (assignee != null && !assignee.isBlank()) {
+            userMapper.findByUsername(assignee)
+                    .orElseThrow(() -> new ResourceNotFoundException("Assignee user not found: " + assignee));
+        }
+        if (assigner != null && !assigner.isBlank()) {
+            userMapper.findByUsername(assigner)
+                    .orElseThrow(() -> new ResourceNotFoundException("Assigner user not found: " + assigner));
+        }
     }
 
     @Override
@@ -33,6 +47,8 @@ public class TaskServiceImpl implements TaskService {
             projectMapper.findById(targetProjectId)
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy project id=" + targetProjectId));
         }
+
+        validateTaskUsers(request.assignee(), request.assigner());
 
         Task task = request.toDomain(targetProjectId);
         taskMapper.insert(task);
@@ -49,8 +65,8 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<TaskResponse> search(TaskStatus status, TaskPriority priority, Long projectId, String keyword) {
-        return taskMapper.search(status, priority, projectId, keyword)
+    public List<TaskResponse> search(TaskStatus status, TaskPriority priority, Long projectId, String assignee, String assigner, String keyword) {
+        return taskMapper.search(status, priority, projectId, assignee, assigner, keyword)
                 .stream()
                 .map(TaskResponse::from)
                 .toList();
@@ -61,6 +77,8 @@ public class TaskServiceImpl implements TaskService {
     public TaskResponse update(Long id, TaskRequest request) {
         Task existing = taskMapper.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy task id=" + id));
+
+        validateTaskUsers(request.assignee(), request.assigner());
 
         Task task = request.toDomain(existing.getProjectId());
         task.setId(id);

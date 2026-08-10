@@ -25,6 +25,9 @@ public record TaskRequest(
         @Size(max = 120, message = "Assignee name max 120 characters")
         String assignee,
 
+        @Size(max = 120, message = "Assigner name max 120 characters")
+        String assigner,
+
         LocalDate dueDate
 ) {
     /** Chuyển DTO input → domain model để đẩy xuống tầng Service/Mapper. */
@@ -36,6 +39,7 @@ public record TaskRequest(
         t.setStatus(status != null ? status : TaskStatus.TODO);
         t.setPriority(priority != null ? priority : TaskPriority.MEDIUM);
         t.setAssignee(assignee);
+        t.setAssigner(assigner);
         t.setDueDate(dueDate);
         return t;
     }

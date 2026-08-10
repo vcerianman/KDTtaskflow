@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kdt.taskflow.mapper.UserMapper">
+
+    <resultMap id="UserResult" type="com.kdt.taskflow.domain.User">
+        <id     property="id"        column="id"/>
+        <result property="username"  column="username"/>
+        <result property="email"     column="email"/>
+        <result property="fullName"  column="full_name"/>
+        <result property="role"      column="role"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <sql id="columns">
+        id, username, email, full_name, role, created_at, updated_at
+    </sql>
+
+    <insert id="insert" parameterType="com.kdt.taskflow.domain.User" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO app_user (username, email, full_name, role)
+        VALUES (#{username}, #{email}, #{fullName}, #{role})
+    </insert>
+
+    <select id="findById" resultMap="UserResult">
+        SELECT <include refid="columns"/>
+        FROM app_user
+        WHERE id = #{id}
+    </select>
+
+    <select id="findByUsername" resultMap="UserResult">
+        SELECT <include refid="columns"/>
+        FROM app_user
+        WHERE username = #{username}
+    </select>
+
+    <select id="findByEmail" resultMap="UserResult">
+        SELECT <include refid="columns"/>
+        FROM app_user
+        WHERE email = #{email}
+    </select>
+
+    <select id="search" resultMap="UserResult">
+        SELECT <include refid="columns"/>
+        FROM app_user
+        <where>
+            <if test="role != null">
+                AND role = #{role}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (username ILIKE '%' || #{keyword} || '%'
+                OR email ILIKE '%' || #{keyword} || '%'
+                OR full_name ILIKE '%' || #{keyword} || '%')
+            </if>
+        </where>
+        ORDER BY created_at DESC
+    </select>
+
+    <update id="update" parameterType="com.kdt.taskflow.domain.User">
+        UPDATE app_user
+        SET username  = #{username},
+            email     = #{email},
+            full_name = #{fullName},
+            role      = #{role},
+            updated_at = now()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM app_user WHERE id = #{id}
+    </delete>
+
+</mapper>

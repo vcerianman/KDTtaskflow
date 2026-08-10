@@ -2,7 +2,6 @@ spring:
     application:
         name: kdt-taskflow
 
-
     datasource:
         url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/postgres}
         username: ${DB_USERNAME:admin}
@@ -13,6 +12,7 @@ spring:
     flyway:
         enabled: true
         baseline-on-migrate: true
+        repair-on-migrate: true
 
     server:
         port: 8080

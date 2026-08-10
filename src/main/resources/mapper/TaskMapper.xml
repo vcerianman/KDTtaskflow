@@ -12,18 +12,19 @@
         <result property="status"      column="status"/>
         <result property="priority"    column="priority"/>
         <result property="assignee"    column="assignee"/>
+        <result property="assigner"    column="assigner"/>
         <result property="dueDate"     column="due_date"/>
         <result property="createdAt"   column="created_at"/>
         <result property="updatedAt"   column="updated_at"/>
     </resultMap>
 
     <sql id="columns">
-        id, project_id, title, description, status, priority, assignee, due_date, created_at, updated_at
+        id, project_id, title, description, status, priority, assignee, assigner, due_date, created_at, updated_at
     </sql>
 
     <insert id="insert" parameterType="com.kdt.taskflow.domain.Task" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO task (project_id, title, description, status, priority, assignee, due_date)
-        VALUES (#{projectId}, #{title}, #{description}, #{status}, #{priority}, #{assignee}, #{dueDate})
+        INSERT INTO task (project_id, title, description, status, priority, assignee, assigner, due_date)
+        VALUES (#{projectId}, #{title}, #{description}, #{status}, #{priority}, #{assignee}, #{assigner}, #{dueDate})
     </insert>
 
     <select id="findById" resultMap="TaskResult">
@@ -45,6 +46,12 @@
             <if test="projectId != null">
                 AND project_id = #{projectId}
             </if>
+            <if test="assignee != null and assignee != ''">
+                AND assignee ILIKE '%' || #{assignee} || '%'
+            </if>
+            <if test="assigner != null and assigner != ''">
+                AND assigner ILIKE '%' || #{assigner} || '%'
+            </if>
             <if test="keyword != null and keyword != ''">
                 AND (title ILIKE '%' || #{keyword} || '%'
                 OR description ILIKE '%' || #{keyword} || '%')
@@ -60,6 +67,7 @@
             status      = #{status},
             priority    = #{priority},
             assignee    = #{assignee},
+            assigner    = #{assigner},
             due_date    = #{dueDate},
             updated_at  = now()
         WHERE id = #{id}

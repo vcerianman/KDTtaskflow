@@ -12,6 +12,7 @@ public class Task {
     private TaskStatus status;
     private TaskPriority priority;
     private String assignee;
+    private String assigner;
     private LocalDate dueDate;
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
@@ -33,6 +34,9 @@ public class Task {
 
     public String getAssignee() { return assignee; }
     public void setAssignee(String assignee) { this.assignee = assignee; }
+
+    public String getAssigner() { return assigner; }
+    public void setAssigner(String assigner) { this.assigner = assigner; }
 
     public LocalDate getDueDate() { return dueDate; }
     public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }

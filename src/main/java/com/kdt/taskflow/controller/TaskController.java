@@ -45,17 +45,19 @@ public class TaskController {
     }
     
     /**
-     * GET /api/tasks — Lấy danh sách task, hỗ trợ lọc theo status, priority, projectId, và keyword.
-     * Ví dụ: /api/tasks?status=IN_PROGRESS&priority=HIGH&projectId=1&keyword=feature
+     * GET /api/tasks — Lấy danh sách task, hỗ trợ lọc theo status, priority, projectId, assignee, assigner, và keyword.
+     * Ví dụ: /api/tasks?status=IN_PROGRESS&priority=HIGH&projectId=1&assignee=john_doe&keyword=feature
      */
     @GetMapping("/tasks")
     public List<TaskResponse> search(
             @RequestParam(required = false) TaskStatus status,
             @RequestParam(required = false) TaskPriority priority,
             @RequestParam(required = false) Long projectId,
+            @RequestParam(required = false) String assignee,
+            @RequestParam(required = false) String assigner,
             @RequestParam(required = false) String keyword) {
 
-        return taskService.search(status, priority, projectId, keyword);
+        return taskService.search(status, priority, projectId, assignee, assigner, keyword);
     }
 
     /** GET /api/tasks/{id} — Lấy chi tiết 1 task. Trả về 404 nếu không tìm thấy. */

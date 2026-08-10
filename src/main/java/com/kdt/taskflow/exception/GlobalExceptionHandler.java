@@ -37,6 +37,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(body);
     }
 
+    /** 400 — Tham số / logic gửi lên không hợp lệ. */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiError> handleIllegalArgument(IllegalArgumentException ex,
+                                                          HttpServletRequest req) {
+        ApiError body = ApiError.of(400, "Bad Request", ex.getMessage(), req.getRequestURI());
+        return ResponseEntity.badRequest().body(body);
+    }
+
     /** 500 — lỗi ngoài dự kiến (lưới an toàn cuối cùng). */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneric(Exception ex, HttpServletRequest req) {

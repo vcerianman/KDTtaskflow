@@ -15,6 +15,7 @@ public record TaskResponse(
         TaskStatus status,
         TaskPriority priority,
         String assignee,
+        String assigner,
         LocalDate dueDate,
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt
@@ -29,6 +30,7 @@ public record TaskResponse(
                 t.getStatus(),
                 t.getPriority(),
                 t.getAssignee(),
+                t.getAssigner(),
                 t.getDueDate(),
                 t.getCreatedAt(),
                 t.getUpdatedAt()
