@@ -2,6 +2,7 @@ package com.kdt.taskflow.dto;
 
 import com.kdt.taskflow.domain.User;
 import com.kdt.taskflow.domain.UserRole;
+import com.kdt.taskflow.domain.UserStatus;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -23,7 +24,9 @@ public record UserRequest(
         @Size(max = 120, message = "Full name max 120 characters")
         String fullName,
 
-        UserRole role
+        UserRole role,
+
+        UserStatus status
 ) {
     public User toDomain() {
         User u = new User();
@@ -31,7 +34,8 @@ public record UserRequest(
         u.setEmail(email);
         u.setPassword(password);
         u.setFullName(fullName);
-        u.setRole(role != null ? role : UserRole.MEMBER);
+        u.setRole(role);
+        u.setStatus(status != null ? status : UserStatus.ACTIVE);
         return u;
     }
 }

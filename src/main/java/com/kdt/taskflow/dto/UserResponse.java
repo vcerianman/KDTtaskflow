@@ -2,6 +2,7 @@ package com.kdt.taskflow.dto;
 
 import com.kdt.taskflow.domain.User;
 import com.kdt.taskflow.domain.UserRole;
+import com.kdt.taskflow.domain.UserStatus;
 
 import java.time.OffsetDateTime;
 
@@ -11,6 +12,8 @@ public record UserResponse(
         String email,
         String fullName,
         UserRole role,
+        UserStatus status,
+        boolean deleted,
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt
 ) {
@@ -21,6 +24,8 @@ public record UserResponse(
                 u.getEmail(),
                 u.getFullName(),
                 u.getRole(),
+                u.getStatus(),
+                u.isDeleted(),
                 u.getCreatedAt(),
                 u.getUpdatedAt()
         );

@@ -11,17 +11,19 @@
         <result property="password"  column="password"/>
         <result property="fullName"  column="full_name"/>
         <result property="role"      column="role"/>
+        <result property="status"    column="status"/>
+        <result property="deleted"   column="deleted"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
     </resultMap>
 
     <sql id="columns">
-        id, username, email, password, full_name, role, created_at, updated_at
+        id, username, email, password, full_name, role, status, deleted, created_at, updated_at
     </sql>
 
     <insert id="insert" parameterType="com.kdt.taskflow.domain.User" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO app_user (username, email, password, full_name, role)
-        VALUES (#{username}, #{email}, #{password}, #{fullName}, #{role})
+        INSERT INTO app_user (username, email, password, full_name, role, status, deleted)
+        VALUES (#{username}, #{email}, #{password}, #{fullName}, #{role}, #{status}, false)
     </insert>
 
     <select id="findById" resultMap="UserResult">
@@ -33,19 +35,20 @@
     <select id="findByUsername" resultMap="UserResult">
         SELECT <include refid="columns"/>
         FROM app_user
-        WHERE username = #{username}
+        WHERE username = #{username} AND deleted = false
     </select>
 
     <select id="findByEmail" resultMap="UserResult">
         SELECT <include refid="columns"/>
         FROM app_user
-        WHERE email = #{email}
+        WHERE email = #{email} AND deleted = false
     </select>
 
     <select id="search" resultMap="UserResult">
         SELECT <include refid="columns"/>
         FROM app_user
         <where>
+            AND deleted = false
             <if test="role != null">
                 AND role = #{role}
             </if>
@@ -58,13 +61,49 @@
         ORDER BY created_at DESC
     </select>
 
+    <select id="searchAdmin" resultMap="UserResult">
+        SELECT <include refid="columns"/>
+        FROM app_user
+        <where>
+            <if test="username != null and username != ''">
+                AND username ILIKE '%' || #{username} || '%'
+            </if>
+            <if test="email != null and email != ''">
+                AND email ILIKE '%' || #{email} || '%'
+            </if>
+            <if test="role != null">
+                AND role = #{role}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY created_at DESC
+    </select>
+
     <update id="update" parameterType="com.kdt.taskflow.domain.User">
         UPDATE app_user
-        SET username  = #{username},
-            email     = #{email},
-            password  = #{password},
-            full_name = #{fullName},
-            role      = #{role},
+        SET username   = #{username},
+            email      = #{email},
+            password   = #{password},
+            full_name  = #{fullName},
+            role       = #{role},
+            status     = #{status},
+            updated_at = now()
+        WHERE id = #{id}
+    </update>
+
+    <update id="updatePassword">
+        UPDATE app_user
+        SET password   = #{password},
+            updated_at = now()
+        WHERE id = #{id}
+    </update>
+
+    <update id="softDeleteById">
+        UPDATE app_user
+        SET deleted    = true,
+            status     = 'INACTIVE',
             updated_at = now()
         WHERE id = #{id}
     </update>

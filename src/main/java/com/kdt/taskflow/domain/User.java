@@ -9,6 +9,8 @@ public class User {
     private String password;
     private String fullName;
     private UserRole role;
+    private UserStatus status;
+    private boolean deleted;
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
 
@@ -29,6 +31,12 @@ public class User {
 
     public UserRole getRole() { return role; }
     public void setRole(UserRole role) { this.role = role; }
+
+    public UserStatus getStatus() { return status; }
+    public void setStatus(UserStatus status) { this.status = status; }
+
+    public boolean isDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
 
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
