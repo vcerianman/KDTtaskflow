@@ -10,7 +10,7 @@ import java.time.LocalDate;
 public record ProjectRequest(
 
         @NotBlank(message = "Project name cannot be null!")
-        @Size(min = 3, max = 6767, message = "Project name: 3 - 6767 characters")
+        @Size(min = 3, max = 6700, message = "Project name: 3 - 6700 characters")
         String name,
 
         @Size(max = 3636, message = "Max 3636 characters")
