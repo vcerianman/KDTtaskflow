@@ -1,5 +1,6 @@
 package com.kdt.taskflow.controller;
 
+import com.kdt.taskflow.dto.CheckPasswordRequest;
 import com.kdt.taskflow.dto.LoginRequest;
 import com.kdt.taskflow.dto.LoginResponse;
 import com.kdt.taskflow.dto.UserResponse;
@@ -35,5 +36,18 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<UserResponse> me(@AuthenticationPrincipal String username) {
         return ResponseEntity.ok(authService.me(username));
+    }
+
+    /**
+     * POST /api/auth/password — Protected endpoint.
+     * Checks if the provided password matches the authenticated user's current password.
+     * Returns 200 (OK) if correct, throws exception / 400 Bad Request if invalid.
+     */
+    @PostMapping("/password")
+    public ResponseEntity<Void> checkPassword(
+            @AuthenticationPrincipal String username,
+            @Valid @RequestBody CheckPasswordRequest request) {
+        authService.checkPassword(username, request);
+        return ResponseEntity.ok().build();
     }
 }

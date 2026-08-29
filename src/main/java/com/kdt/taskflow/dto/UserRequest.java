@@ -1,11 +1,15 @@
 package com.kdt.taskflow.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.kdt.taskflow.domain.User;
 import com.kdt.taskflow.domain.UserRole;
 import com.kdt.taskflow.domain.UserStatus;
+import com.kdt.taskflow.dto.deserializer.FlexibleStringListDeserializer;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+
+import java.util.List;
 
 public record UserRequest(
         @NotBlank(message = "Username cannot be blank!")
@@ -24,6 +28,12 @@ public record UserRequest(
         @Size(max = 120, message = "Full name max 120 characters")
         String fullName,
 
+        @JsonDeserialize(using = FlexibleStringListDeserializer.class)
+        List<String> about,
+
+        @JsonDeserialize(using = FlexibleStringListDeserializer.class)
+        List<String> projects,
+
         UserRole role,
 
         UserStatus status
@@ -34,6 +44,8 @@ public record UserRequest(
         u.setEmail(email);
         u.setPassword(password);
         u.setFullName(fullName);
+        u.setAbout(about);
+        u.setProjects(projects);
         u.setRole(role);
         u.setStatus(status != null ? status : UserStatus.ACTIVE);
         return u;

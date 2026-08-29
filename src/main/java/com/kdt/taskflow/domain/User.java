@@ -1,6 +1,7 @@
 package com.kdt.taskflow.domain;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 public class User {
     private Long id;
@@ -8,6 +9,8 @@ public class User {
     private String email;
     private String password;
     private String fullName;
+    private List<String> about;
+    private List<String> projects;
     private UserRole role;
     private UserStatus status;
     private boolean deleted;
@@ -28,6 +31,12 @@ public class User {
 
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
+
+    public List<String> getAbout() { return about; }
+    public void setAbout(List<String> about) { this.about = about; }
+
+    public List<String> getProjects() { return projects; }
+    public void setProjects(List<String> projects) { this.projects = projects; }
 
     public UserRole getRole() { return role; }
     public void setRole(UserRole role) { this.role = role; }

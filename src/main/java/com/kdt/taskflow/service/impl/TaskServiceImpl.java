@@ -65,6 +65,16 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<TaskResponse> getByProjectId(Long projectId) {
+        if (projectId != null) {
+            projectMapper.findById(projectId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Cannot find project id=" + projectId));
+        }
+        return search(null, null, projectId, null, null, null);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<TaskResponse> search(TaskStatus status, TaskPriority priority, Long projectId, String assignee, String assigner, String keyword) {
         return taskMapper.search(status, priority, projectId, assignee, assigner, keyword)
                 .stream()

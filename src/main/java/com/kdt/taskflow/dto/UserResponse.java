@@ -5,12 +5,15 @@ import com.kdt.taskflow.domain.UserRole;
 import com.kdt.taskflow.domain.UserStatus;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 public record UserResponse(
         Long id,
         String username,
         String email,
         String fullName,
+        List<String> about,
+        List<String> projects,
         UserRole role,
         UserStatus status,
         boolean deleted,
@@ -23,6 +26,8 @@ public record UserResponse(
                 u.getUsername(),
                 u.getEmail(),
                 u.getFullName(),
+                u.getAbout(),
+                u.getProjects(),
                 u.getRole(),
                 u.getStatus(),
                 u.isDeleted(),

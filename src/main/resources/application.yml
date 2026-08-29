@@ -14,15 +14,17 @@ spring:
         baseline-on-migrate: true
         repair-on-migrate: true
 
-    server:
-        port: 8080
-
     logging:
         level:
             com.kdt.taskflow.mapper: debug
 
+server:
+    port: 8080
+    address: 0.0.0.0
+
 mybatis:
     type-aliases-package: com.kdt.taskflow.domain
+    type-handlers-package: com.kdt.taskflow.mapper.typehandler
     mapper-locations: classpath:mapper/**/*.xml
     configuration:
         map-underscore-to-camel-case: true

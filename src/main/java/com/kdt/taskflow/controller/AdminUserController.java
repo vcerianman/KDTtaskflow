@@ -63,7 +63,7 @@ public class AdminUserController {
     @PutMapping("/{id}")
     public UserResponse update(@PathVariable Long id,
                                @Valid @RequestBody UserRequest request) {
-        return userService.update(id, request);
+        return userService.updateAdmin(id, request);
     }
 
     /**

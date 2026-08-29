@@ -45,6 +45,15 @@ public class TaskController {
     }
     
     /**
+     * GET /api/projects/{projectId}/tasks and /api/project/{projectId}/tasks
+     * Returns all tasks associated with the specified project ID.
+     */
+    @GetMapping({"/projects/{projectId}/tasks", "/project/{projectId}/tasks"})
+    public List<TaskResponse> getTasksByProjectId(@PathVariable Long projectId) {
+        return taskService.getByProjectId(projectId);
+    }
+
+    /**
      * GET /api/tasks - Get list of tasks - and sortable
      * EX: /api/tasks?status=IN_PROGRESS&priority=HIGH&projectId=1&assignee=john_doe&keyword=feature
      */

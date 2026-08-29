@@ -3,10 +3,12 @@ package com.kdt.taskflow.controller;
 import com.kdt.taskflow.domain.UserRole;
 import com.kdt.taskflow.dto.UserRequest;
 import com.kdt.taskflow.dto.UserResponse;
+import com.kdt.taskflow.dto.UserUpdateRequest;
 import com.kdt.taskflow.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -26,7 +28,7 @@ public class UserController {
     /** POST /api/users — Tạo user mới. Trả 201 Created + header Location. */
     @PostMapping
     public ResponseEntity<UserResponse> create(@Valid @RequestBody UserRequest request,
-                                               UriComponentsBuilder uriBuilder) {
+            UriComponentsBuilder uriBuilder) {
         UserResponse created = userService.create(request);
         URI location = uriBuilder.path("/api/users/{id}")
                 .buildAndExpand(created.id())
@@ -35,12 +37,13 @@ public class UserController {
     }
 
     /**
-     * GET /api/users — Danh sách user, hỗ trợ lọc theo role và keyword.
+     * GET /api/users — Danh sách user, hỗ trợ lọc theo projectId, role và keyword.
      */
     @GetMapping
-    public List<UserResponse> search(@RequestParam(required = false) UserRole role,
-                                     @RequestParam(required = false) String keyword) {
-        return userService.search(role, keyword);
+    public List<UserResponse> search(@RequestParam(required = false) Long projectId,
+            @RequestParam(required = false) UserRole role,
+            @RequestParam(required = false) String keyword) {
+        return userService.search(projectId, role, keyword);
     }
 
     /** GET /api/users/{id} — Lấy chi tiết 1 user. */
@@ -49,11 +52,14 @@ public class UserController {
         return userService.getById(id);
     }
 
-    /** PUT /api/users/{id} — Cập nhật user theo id. */
+    /**
+     * PUT /api/users/{id} — Update user profile (fullname, email, status, password, about, projects).
+     */
     @PutMapping("/{id}")
     public UserResponse update(@PathVariable Long id,
-                               @Valid @RequestBody UserRequest request) {
-        return userService.update(id, request);
+            @AuthenticationPrincipal String currentUsername,
+            @Valid @RequestBody UserUpdateRequest request) {
+        return userService.update(id, currentUsername, request);
     }
 
     /** DELETE /api/users/{id} — Xóa user theo id. Trả 204 No Content. */

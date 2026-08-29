@@ -1,6 +1,7 @@
 package com.kdt.taskflow.service.impl;
 
 import com.kdt.taskflow.domain.User;
+import com.kdt.taskflow.dto.CheckPasswordRequest;
 import com.kdt.taskflow.dto.LoginRequest;
 import com.kdt.taskflow.dto.LoginResponse;
 import com.kdt.taskflow.dto.UserResponse;
@@ -49,5 +50,16 @@ public class AuthServiceImpl implements AuthService {
         User user = userMapper.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
         return UserResponse.from(user);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void checkPassword(String username, CheckPasswordRequest request) {
+        User user = userMapper.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+            throw new IllegalArgumentException("Invalid password");
+        }
     }
 }
