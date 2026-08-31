@@ -5,7 +5,11 @@ import com.kdt.taskflow.dto.LoginRequest;
 import com.kdt.taskflow.dto.LoginResponse;
 import com.kdt.taskflow.dto.UserResponse;
 
+import com.kdt.taskflow.dto.SignupRequest;
+
 public interface AuthService {
+    LoginResponse signup(SignupRequest request);
+
     LoginResponse login(LoginRequest request);
 
     UserResponse me(String username);

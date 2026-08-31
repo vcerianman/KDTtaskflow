@@ -62,7 +62,8 @@
 
     <update id="update" parameterType="com.kdt.taskflow.domain.Task">
         UPDATE task
-        SET title       = #{title},
+        SET project_id  = #{projectId},
+            title       = #{title},
             description = #{description},
             status      = #{status},
             priority    = #{priority},

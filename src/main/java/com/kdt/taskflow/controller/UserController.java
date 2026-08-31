@@ -37,7 +37,7 @@ public class UserController {
     }
 
     /**
-     * GET /api/users — Danh sách user, hỗ trợ lọc theo projectId, role và keyword.
+     * GET /api/users — list fof users
      */
     @GetMapping
     public List<UserResponse> search(@RequestParam(required = false) Long projectId,
@@ -53,7 +53,8 @@ public class UserController {
     }
 
     /**
-     * PUT /api/users/{id} — Update user profile (fullname, email, status, password, about, projects).
+     * PUT /api/users/{id} — Update user profile (fullname, email, status, password,
+     * about, projects).
      */
     @PutMapping("/{id}")
     public UserResponse update(@PathVariable Long id,

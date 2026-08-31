@@ -53,10 +53,10 @@ public class ProjectController {
         return projectService.getById(id);
     }
 
-    /** PUT /api/projects/{id} — cập nhật. Trả 404 nếu id không tồn tại. */
-    @PutMapping("/{id}")
+    /** PUT /api/projects/{id} or PATCH /api/projects/{id} — cập nhật. Trả 404 nếu id không tồn tại. */
+    @RequestMapping(value = "/{id}", method = {RequestMethod.PUT, RequestMethod.PATCH})
     public ProjectResponse update(@PathVariable Long id,
-                                  @Valid @RequestBody ProjectRequest request) {
+                                  @RequestBody ProjectRequest request) {
         return projectService.update(id, request);
     }
 

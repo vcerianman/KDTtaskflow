@@ -88,12 +88,43 @@ public class TaskServiceImpl implements TaskService {
         Task existing = taskMapper.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cannot find task id=" + id));
 
-        validateTaskUsers(request.assignee(), request.assigner());
+        if (request.projectId() != null) {
+            projectMapper.findById(request.projectId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Cannot find project id=" + request.projectId()));
+            existing.setProjectId(request.projectId());
+        }
 
-        Task task = request.toDomain(existing.getProjectId());
-        task.setId(id);
+        if (request.title() != null && !request.title().isBlank()) {
+            existing.setTitle(request.title().trim());
+        }
 
-        int affected = taskMapper.update(task);
+        if (request.description() != null && !request.description().isBlank()) {
+            existing.setDescription(request.description().trim());
+        }
+
+        if (request.status() != null) {
+            existing.setStatus(request.status());
+        }
+
+        if (request.priority() != null) {
+            existing.setPriority(request.priority());
+        }
+
+        if (request.assignee() != null && !request.assignee().isBlank()) {
+            validateTaskUsers(request.assignee().trim(), null);
+            existing.setAssignee(request.assignee().trim());
+        }
+
+        if (request.assigner() != null && !request.assigner().isBlank()) {
+            validateTaskUsers(null, request.assigner().trim());
+            existing.setAssigner(request.assigner().trim());
+        }
+
+        if (request.dueDate() != null) {
+            existing.setDueDate(request.dueDate());
+        }
+
+        int affected = taskMapper.update(existing);
         if (affected == 0) {
             throw new ResourceNotFoundException("Cannot find task id=" + id);
         }

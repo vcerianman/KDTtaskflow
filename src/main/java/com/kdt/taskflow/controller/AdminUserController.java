@@ -58,11 +58,11 @@ public class AdminUserController {
     }
 
     /**
-     * PUT /api/admin/users/{id} — Update user account.
+     * PUT /api/admin/users/{id} or PATCH /api/admin/users/{id} — Update user account.
      */
-    @PutMapping("/{id}")
+    @RequestMapping(value = "/{id}", method = {RequestMethod.PUT, RequestMethod.PATCH})
     public UserResponse update(@PathVariable Long id,
-                               @Valid @RequestBody UserRequest request) {
+                               @RequestBody UserRequest request) {
         return userService.updateAdmin(id, request);
     }
 

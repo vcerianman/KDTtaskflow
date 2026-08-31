@@ -86,13 +86,18 @@ public class JwtUtils {
     public UsernamePasswordAuthenticationToken getAuthentication(String token) {
         String username = getUsernameFromToken(token);
         
-        // Lookup user in DB to build granted authorities based on user's assigned role
+        // Lookup user in DB to build granted authorities based on user's assigned role.
+        // Banned/BLOCKED users are assigned ROLE_BLOCKED so they can access /api/auth/** but all other endpoints are restricted.
         return userMapper.findByUsername(username)
-                .map(user -> new UsernamePasswordAuthenticationToken(
-                        username,
-                        null,
-                        List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
-                ))
+                .map(user -> {
+                    List<SimpleGrantedAuthority> authorities;
+                    if (user.getStatus() == com.kdt.taskflow.domain.UserStatus.BLOCKED) {
+                        authorities = List.of(new SimpleGrantedAuthority("ROLE_BLOCKED"));
+                    } else {
+                        authorities = List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+                    }
+                    return new UsernamePasswordAuthenticationToken(username, null, authorities);
+                })
                 .orElse(null);
     }
 

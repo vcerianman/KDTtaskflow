@@ -3,9 +3,11 @@ package com.kdt.taskflow.controller;
 import com.kdt.taskflow.dto.CheckPasswordRequest;
 import com.kdt.taskflow.dto.LoginRequest;
 import com.kdt.taskflow.dto.LoginResponse;
+import com.kdt.taskflow.dto.SignupRequest;
 import com.kdt.taskflow.dto.UserResponse;
 import com.kdt.taskflow.service.AuthService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +20,15 @@ public class AuthController {
 
     public AuthController(AuthService authService) {
         this.authService = authService;
+    }
+
+    /**
+     * POST /api/auth/signup — Public endpoint.
+     * Registers a new user account with encrypted password and returns a JWT access token for instant login.
+     */
+    @PostMapping("/signup")
+    public ResponseEntity<LoginResponse> signup(@Valid @RequestBody SignupRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.signup(request));
     }
 
     /**

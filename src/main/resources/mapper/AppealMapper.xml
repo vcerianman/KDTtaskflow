@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kdt.taskflow.mapper.AppealMapper">
+
+    <resultMap id="AppealResult" type="com.kdt.taskflow.domain.Appeal">
+        <id     property="id"        column="id"/>
+        <result property="username"  column="username"/>
+        <result property="reason"    column="reason"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <sql id="columns">
+        id, username, reason, created_at
+    </sql>
+
+    <insert id="insert" parameterType="com.kdt.taskflow.domain.Appeal" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO appeal (username, reason)
+        VALUES (#{username}, #{reason})
+    </insert>
+
+    <select id="findById" resultMap="AppealResult">
+        SELECT <include refid="columns"/>
+        FROM appeal
+        WHERE id = #{id}
+    </select>
+
+    <select id="search" resultMap="AppealResult">
+        SELECT <include refid="columns"/>
+        FROM appeal
+        <where>
+            <if test="username != null and username != ''">
+                AND username = #{username}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (username ILIKE '%' || #{keyword} || '%'
+                OR reason ILIKE '%' || #{keyword} || '%')
+            </if>
+        </where>
+        ORDER BY created_at DESC
+    </select>
+
+    <delete id="deleteById">
+        DELETE FROM appeal WHERE id = #{id}
+    </delete>
+
+</mapper>

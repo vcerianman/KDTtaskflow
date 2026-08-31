@@ -14,7 +14,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
-
 @RestController
 @RequestMapping("/api")
 public class TaskController {
@@ -26,7 +25,7 @@ public class TaskController {
     }
 
     /**
-     * POST /api/projects/{projectId}/tasks — Tạo 1 task mới gắn liền với project.
+     * POST /api/projects/{projectId}/tasks — Tcreate 1 task for project.
      */
     @PostMapping("/projects/{projectId}/tasks")
     public ResponseEntity<TaskResponse> create(
@@ -43,19 +42,20 @@ public class TaskController {
 
         return ResponseEntity.created(location).body(created);
     }
-    
+
     /**
      * GET /api/projects/{projectId}/tasks and /api/project/{projectId}/tasks
      * Returns all tasks associated with the specified project ID.
      */
-    @GetMapping({"/projects/{projectId}/tasks", "/project/{projectId}/tasks"})
+    @GetMapping({ "/projects/{projectId}/tasks", "/project/{projectId}/tasks" })
     public List<TaskResponse> getTasksByProjectId(@PathVariable Long projectId) {
         return taskService.getByProjectId(projectId);
     }
 
     /**
      * GET /api/tasks - Get list of tasks - and sortable
-     * EX: /api/tasks?status=IN_PROGRESS&priority=HIGH&projectId=1&assignee=john_doe&keyword=feature
+     * EX:
+     * /api/tasks?status=IN_PROGRESS&priority=HIGH&projectId=1&assignee=john_doe&keyword=feature
      */
     @GetMapping("/tasks")
     public List<TaskResponse> search(
@@ -75,14 +75,14 @@ public class TaskController {
         return taskService.getById(id);
     }
 
-    /** PUT /api/tasks/{id} — Cập nhật 1 task theo id. Trả về 404 nếu task không tồn tại. */
-    @PutMapping("/tasks/{id}")
+    /** PUT /api/tasks/{id} or PATCH /api/tasks/{id} — update task by id (partial update supported) - return 404 if not found. */
+    @RequestMapping(value = "/tasks/{id}", method = {RequestMethod.PUT, RequestMethod.PATCH})
     public TaskResponse update(@PathVariable Long id,
-                               @Valid @RequestBody TaskRequest request) {
+            @RequestBody TaskRequest request) {
         return taskService.update(id, request);
     }
 
-    /** DELETE /api/tasks/{id} — Xóa 1 task. Trả về 204 No Content. */
+    /** DELETE /api/tasks/{id} — delete task - return 204 No Content. */
     @DeleteMapping("/tasks/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {

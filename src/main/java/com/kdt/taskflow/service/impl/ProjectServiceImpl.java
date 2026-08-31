@@ -52,9 +52,34 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional
     public ProjectResponse update(Long id, ProjectRequest request) {
-        Project project = request.toDomain();
-        project.setId(id);
-        int affected = projectMapper.update(project);
+        Project existing = projectMapper.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Cannot find project id=" + id));
+
+        if (request.name() != null && !request.name().isBlank()) {
+            existing.setName(request.name().trim());
+        }
+
+        if (request.description() != null) {
+            existing.setDescription(request.description().trim());
+        }
+
+        if (request.status() != null) {
+            existing.setStatus(request.status());
+        }
+
+        if (request.owner() != null && !request.owner().isBlank()) {
+            existing.setOwner(request.owner().trim());
+        }
+
+        if (request.startDate() != null) {
+            existing.setStartDate(request.startDate());
+        }
+
+        if (request.dueDate() != null) {
+            existing.setDueDate(request.dueDate());
+        }
+
+        int affected = projectMapper.update(existing);
         if (affected == 0) {
             // update trả 0 dòng nghĩa là id không tồn tại
             throw new ResourceNotFoundException("Cannot find project id=" + id);
