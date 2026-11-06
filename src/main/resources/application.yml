@@ -3,9 +3,9 @@ spring:
         name: kdt-taskflow
 
     datasource:
-        url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/postgres}
-        username: ${DB_USERNAME:admin}
-        password: ${DB_PASSWORD:112318}
+        url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://dpg-dbmooak9v7es73ac58sg-a.singapore-postgres.render.com/kdt_postgres}
+        username: ${DB_USERNAME:kdt}
+        password: ${DB_PASSWORD:uEBA1co52bLqplUsVSaKplSQJ881CEin}
         hikari:
             pool-name: project-pool
             maximum-pool-size: 10

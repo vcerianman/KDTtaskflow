@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kdt.taskflow.mapper.PostMapper">
+
+    <resultMap id="PostResult" type="com.kdt.taskflow.domain.Post">
+        <id     property="id"          column="id"/>
+        <result property="title"       column="title"/>
+        <result property="description" column="description"/>
+        <result property="author"      column="author"/>
+        <result property="reply"       column="reply"/>
+        <result property="projectId"   column="project_id"/>
+        <result property="createdAt"   column="created_at"/>
+        <result property="updatedAt"   column="updated_at"/>
+    </resultMap>
+
+    <sql id="columns">
+        id, title, description, author, reply, project_id, created_at, updated_at
+    </sql>
+
+    <insert id="insert" parameterType="com.kdt.taskflow.domain.Post" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO post (title, description, author, reply, project_id)
+        VALUES (#{title}, #{description}, #{author}, #{reply}, #{projectId})
+    </insert>
+
+    <select id="findById" resultMap="PostResult">
+        SELECT <include refid="columns"/>
+        FROM post
+        WHERE id = #{id}
+    </select>
+
+    <select id="search" resultMap="PostResult">
+        SELECT <include refid="columns"/>
+        FROM post
+        <where>
+            <if test="projectId != null">
+                AND project_id = #{projectId}
+            </if>
+            <if test="author != null and author != ''">
+                AND author ILIKE '%' || #{author} || '%'
+            </if>
+            <if test="reply != null">
+                AND reply = #{reply}
+            </if>
+            <if test="topLevelOnly != null and topLevelOnly == true">
+                AND reply IS NULL
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (title ILIKE '%' || #{keyword} || '%'
+                OR description ILIKE '%' || #{keyword} || '%')
+            </if>
+        </where>
+        ORDER BY created_at ASC
+    </select>
+
+    <update id="update" parameterType="com.kdt.taskflow.domain.Post">
+        UPDATE post
+        SET title       = #{title},
+            description = #{description},
+            author      = #{author},
+            reply       = #{reply},
+            project_id  = #{projectId},
+            updated_at  = now()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM post WHERE id = #{id}
+    </delete>
+
+</mapper>

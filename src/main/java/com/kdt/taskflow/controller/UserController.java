@@ -53,10 +53,10 @@ public class UserController {
     }
 
     /**
-     * PUT /api/users/{id} — Update user profile (fullname, email, status, password,
-     * about, projects).
+     * PUT /api/users/{id} or PATCH /api/users/{id} — Update user profile (fullname, email, status, password,
+     * about, projects, theme).
      */
-    @PutMapping("/{id}")
+    @RequestMapping(value = "/{id}", method = {RequestMethod.PUT, RequestMethod.PATCH})
     public UserResponse update(@PathVariable Long id,
             @AuthenticationPrincipal String currentUsername,
             @Valid @RequestBody UserUpdateRequest request) {

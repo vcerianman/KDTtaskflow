@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kdt.taskflow.mapper.ReportMapper">
+
+    <resultMap id="ReportResult" type="com.kdt.taskflow.domain.Report">
+        <id     property="id"             column="id"/>
+        <result property="type"           column="type"/>
+        <result property="author"         column="author"/>
+        <result property="targetUsername" column="target_username"/>
+        <result property="reason"         column="reason"/>
+        <result property="explanation"    column="explanation"/>
+        <result property="createdAt"      column="created_at"/>
+    </resultMap>
+
+    <sql id="columns">
+        id, type, author, target_username, reason, explanation, created_at
+    </sql>
+
+    <insert id="insert" parameterType="com.kdt.taskflow.domain.Report" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO report (type, author, target_username, reason, explanation)
+        VALUES (#{type}, #{author}, #{targetUsername}, #{reason}, #{explanation})
+    </insert>
+
+    <select id="findById" resultMap="ReportResult">
+        SELECT <include refid="columns"/>
+        FROM report
+        WHERE id = #{id}
+    </select>
+
+    <select id="search" resultMap="ReportResult">
+        SELECT <include refid="columns"/>
+        FROM report
+        <where>
+            <if test="type != null and type != ''">
+                AND type = #{type}
+            </if>
+            <if test="author != null and author != ''">
+                AND author ILIKE '%' || #{author} || '%'
+            </if>
+            <if test="targetUsername != null and targetUsername != ''">
+                AND target_username ILIKE '%' || #{targetUsername} || '%'
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (reason ILIKE '%' || #{keyword} || '%'
+                OR explanation ILIKE '%' || #{keyword} || '%'
+                OR author ILIKE '%' || #{keyword} || '%'
+                OR target_username ILIKE '%' || #{keyword} || '%')
+            </if>
+        </where>
+        ORDER BY created_at DESC
+    </select>
+
+    <delete id="deleteById">
+        DELETE FROM report WHERE id = #{id}
+    </delete>
+
+</mapper>

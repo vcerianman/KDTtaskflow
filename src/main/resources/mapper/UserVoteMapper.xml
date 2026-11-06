@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kdt.taskflow.mapper.UserVoteMapper">
+
+    <resultMap id="UserVoteResult" type="com.kdt.taskflow.domain.UserVote">
+        <id     property="voterId"   column="voter_id"/>
+        <id     property="targetId"  column="target_id"/>
+        <result property="voteType"  column="vote_type"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <sql id="columns">
+        voter_id, target_id, vote_type, created_at, updated_at
+    </sql>
+
+    <!-- Upsert: Insert vote or update if already voted -->
+    <insert id="upsert" parameterType="com.kdt.taskflow.domain.UserVote">
+        INSERT INTO user_vote (voter_id, target_id, vote_type, created_at, updated_at)
+        VALUES (#{voterId}, #{targetId}, #{voteType}, now(), now())
+        ON CONFLICT (voter_id, target_id)
+        DO UPDATE SET vote_type = EXCLUDED.vote_type,
+                      updated_at = now()
+    </insert>
+
+    <select id="findByVoterAndTarget" resultMap="UserVoteResult">
+        SELECT <include refid="columns"/>
+        FROM user_vote
+        WHERE voter_id = #{voterId} AND target_id = #{targetId}
+    </select>
+
+    <select id="countLikesByTargetId" resultType="long">
+        SELECT COUNT(*)
+        FROM user_vote
+        WHERE target_id = #{targetId} AND vote_type > 0
+    </select>
+
+    <select id="countDislikesByTargetId" resultType="long">
+        SELECT COUNT(*)
+        FROM user_vote
+        WHERE target_id = #{targetId} AND vote_type &lt; 0
+    </select>
+
+    <select id="sumScoreByTargetId" resultType="long">
+        SELECT COALESCE(SUM(vote_type), 0)
+        FROM user_vote
+        WHERE target_id = #{targetId}
+    </select>
+
+    <delete id="delete">
+        DELETE FROM user_vote
+        WHERE voter_id = #{voterId} AND target_id = #{targetId}
+    </delete>
+
+</mapper>
