@@ -7,6 +7,7 @@ import com.kdt.taskflow.exception.ResourceNotFoundException;
 import com.kdt.taskflow.mapper.PostMapper;
 import com.kdt.taskflow.mapper.ProjectMapper;
 import com.kdt.taskflow.service.PostService;
+import com.kdt.taskflow.service.PostSseService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,10 +18,12 @@ public class PostServiceImpl implements PostService {
 
     private final PostMapper postMapper;
     private final ProjectMapper projectMapper;
+    private final PostSseService postSseService;
 
-    public PostServiceImpl(PostMapper postMapper, ProjectMapper projectMapper) {
+    public PostServiceImpl(PostMapper postMapper, ProjectMapper projectMapper, PostSseService postSseService) {
         this.postMapper = postMapper;
         this.projectMapper = projectMapper;
+        this.postSseService = postSseService;
     }
 
     private void validateRelations(Long projectId, Long replyId) {
@@ -49,7 +52,9 @@ public class PostServiceImpl implements PostService {
 
         Post post = request.toDomain(effectiveAuthor);
         postMapper.insert(post);
-        return getById(post.getId());
+        PostResponse created = getById(post.getId());
+        postSseService.broadcastCreated(created);
+        return created;
     }
 
     @Override
@@ -103,15 +108,21 @@ public class PostServiceImpl implements PostService {
         if (affected == 0) {
             throw new ResourceNotFoundException("Cannot find post id=" + id);
         }
-        return getById(id);
+        PostResponse updated = getById(id);
+        postSseService.broadcastUpdated(updated);
+        return updated;
     }
 
     @Override
     @Transactional
     public void delete(Long id) {
+        Post post = postMapper.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Cannot find post id=" + id));
+
         int affected = postMapper.deleteById(id);
         if (affected == 0) {
             throw new ResourceNotFoundException("Cannot find post id=" + id);
         }
+        postSseService.broadcastDeleted(id, post.getProjectId());
     }
 }

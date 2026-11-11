@@ -3,24 +3,31 @@ package com.kdt.taskflow.controller;
 import com.kdt.taskflow.dto.PostRequest;
 import com.kdt.taskflow.dto.PostResponse;
 import com.kdt.taskflow.service.PostService;
+import com.kdt.taskflow.service.PostSseService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
 public class PostController {
 
     private final PostService postService;
+    private final PostSseService postSseService;
 
-    public PostController(PostService postService) {
+    public PostController(PostService postService, PostSseService postSseService) {
         this.postService = postService;
+        this.postSseService = postSseService;
     }
 
     /**
@@ -28,7 +35,7 @@ public class PostController {
      * If request.reply is null -> new post.
      * If request.reply is an ID -> reply to that post ID.
      */
-    @PostMapping({"/post", "/posts"})
+    @PostMapping({ "/post", "/posts" })
     public ResponseEntity<PostResponse> create(
             @Valid @RequestBody PostRequest request,
             @AuthenticationPrincipal String currentUsername,
@@ -54,7 +61,7 @@ public class PostController {
      * - /api/post?author=john -> posts/replies by author john
      * - /api/post?keyword=meeting -> search title and description
      */
-    @GetMapping({"/post", "/posts"})
+    @GetMapping({ "/post", "/posts" })
     public List<PostResponse> search(
             @RequestParam(required = false) Long projectId,
             @RequestParam(required = false) String author,
@@ -68,7 +75,7 @@ public class PostController {
     /**
      * GET /api/post/{id} or /api/posts/{id} — Get single post or reply by ID.
      */
-    @GetMapping({"/post/{id}", "/posts/{id}"})
+    @GetMapping({ "/post/{id}", "/posts/{id}" })
     public PostResponse getById(@PathVariable Long id) {
         return postService.getById(id);
     }
@@ -76,7 +83,7 @@ public class PostController {
     /**
      * PUT or PATCH /api/post/{id} or /api/posts/{id} — Update post or reply.
      */
-    @RequestMapping(value = {"/post/{id}", "/posts/{id}"}, method = {RequestMethod.PUT, RequestMethod.PATCH})
+    @RequestMapping(value = { "/post/{id}", "/posts/{id}" }, method = { RequestMethod.PUT, RequestMethod.PATCH })
     public PostResponse update(
             @PathVariable Long id,
             @RequestBody PostRequest request) {
@@ -87,9 +94,40 @@ public class PostController {
      * DELETE /api/post/{id} or /api/posts/{id} — Delete post or reply by ID.
      * If top-level post is deleted, child replies are cascaded.
      */
-    @DeleteMapping({"/post/{id}", "/posts/{id}"})
+    @DeleteMapping({ "/post/{id}", "/posts/{id}" })
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         postService.delete(id);
+    }
+
+    /**
+     * GET /api/post/stream or /api/posts/stream
+     * Server-Sent Events (SSE) stream for real-time post communication.
+     * Supports optional projectId query parameter to filter events by project.
+     *
+     * Event types received by subscribers:
+     * - "CONNECTED": initial handshake confirmation
+     * - "POST_CREATED": new post or reply created
+     * - "POST_UPDATED": existing post or reply updated
+     * - "POST_DELETED": post or reply deleted
+     * - "HEARTBEAT": periodic keepalive event
+     */
+    @GetMapping(value = { "/post/stream", "/posts/stream" }, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter stream(
+            @RequestParam(required = false) Long projectId,
+            @AuthenticationPrincipal String currentUsername) {
+        return postSseService.subscribe(projectId, currentUsername);
+    }
+
+    /**
+     * GET /api/post/stream/status or /api/posts/stream/status
+     * Returns real-time health and active subscriber count for the SSE stream.
+     */
+    @GetMapping({"/post/stream/status", "/posts/stream/status"})
+    public ResponseEntity<Map<String, Object>> streamStatus() {
+        Map<String, Object> status = new HashMap<>();
+        status.put("activeSubscribers", postSseService.getActiveSubscriberCount());
+        status.put("status", "UP");
+        return ResponseEntity.ok(status);
     }
 }
