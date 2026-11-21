@@ -1,6 +1,8 @@
 package com.kdt.taskflow.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -17,10 +19,12 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     /** 404 — không tìm thấy tài nguyên. */
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiError> handleNotFound(ResourceNotFoundException ex,
-                                                   HttpServletRequest req) {
+            HttpServletRequest req) {
         ApiError body = ApiError.of(404, "Not Found", ex.getMessage(), req.getRequestURI());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
@@ -28,7 +32,7 @@ public class GlobalExceptionHandler {
     /** 400 — dữ liệu gửi lên không hợp lệ (Bean Validation). */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException ex,
-                                                     HttpServletRequest req) {
+            HttpServletRequest req) {
         Map<String, String> fieldErrors = new LinkedHashMap<>();
         for (FieldError fe : ex.getBindingResult().getFieldErrors()) {
             fieldErrors.put(fe.getField(), fe.getDefaultMessage());
@@ -40,7 +44,7 @@ public class GlobalExceptionHandler {
     /** 400 — Tham số / logic gửi lên không hợp lệ. */
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiError> handleIllegalArgument(IllegalArgumentException ex,
-                                                          HttpServletRequest req) {
+            HttpServletRequest req) {
         ApiError body = ApiError.of(400, "Bad Request", ex.getMessage(), req.getRequestURI());
         return ResponseEntity.badRequest().body(body);
     }
@@ -48,7 +52,7 @@ public class GlobalExceptionHandler {
     /** 403 — Không có quyền truy cập. */
     @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
     public ResponseEntity<ApiError> handleAccessDenied(org.springframework.security.access.AccessDeniedException ex,
-                                                       HttpServletRequest req) {
+            HttpServletRequest req) {
         ApiError body = ApiError.of(403, "Forbidden", ex.getMessage(), req.getRequestURI());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
     }
@@ -56,8 +60,11 @@ public class GlobalExceptionHandler {
     /** 500 — lỗi ngoài dự kiến (lưới an toàn cuối cùng). */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneric(Exception ex, HttpServletRequest req) {
-        ApiError body = ApiError.of(500, "Internal Server Error",
-                "The great server has fallen!", req.getRequestURI());
+        log.error("Internal server error at URL: {}", req.getRequestURI(), ex);
+        String detailMessage = (ex.getMessage() != null && !ex.getMessage().isBlank())
+                ? ex.getMessage()
+                : "The great server has fallen!";
+        ApiError body = ApiError.of(500, "Internal Server Error", detailMessage, req.getRequestURI());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
 }

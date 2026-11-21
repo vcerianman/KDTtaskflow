@@ -75,8 +75,11 @@ public class TaskController {
         return taskService.getById(id);
     }
 
-    /** PUT /api/tasks/{id} or PATCH /api/tasks/{id} — update task by id (partial update supported) - return 404 if not found. */
-    @RequestMapping(value = "/tasks/{id}", method = {RequestMethod.PUT, RequestMethod.PATCH})
+    /**
+     * PUT /api/tasks/{id} or PATCH /api/tasks/{id} — update task by id (partial
+     * update supported) - return 404 if not found.
+     */
+    @RequestMapping(value = "/tasks/{id}", method = { RequestMethod.PUT, RequestMethod.PATCH })
     public TaskResponse update(@PathVariable Long id,
             @RequestBody TaskRequest request) {
         return taskService.update(id, request);
