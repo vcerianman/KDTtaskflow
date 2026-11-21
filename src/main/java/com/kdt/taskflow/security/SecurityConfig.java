@@ -37,7 +37,10 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.GET, "/api/ping").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/signup", "/api/appeals").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/signup", "/api/appeals",
+                        "/api/forgotpassword", "/api/forgotpassword/**",
+                        "/api/forgot-password", "/api/forgot-password/**",
+                        "/api/auth/forgotpassword", "/api/auth/forgot-password").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/appeals").permitAll()
                 .requestMatchers("/api/auth/**").authenticated()
                 .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "GOD")
