@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kdt.taskflow.mapper.NotificationMapper">
+
+    <resultMap id="NotificationResult" type="com.kdt.taskflow.domain.Notification">
+        <id     property="id"          column="id"/>
+        <result property="recipientId" column="recipient_id"/>
+        <result property="actorId"     column="actor_id"/>
+        <result property="type"        column="type"/>
+        <result property="message"     column="message"/>
+        <result property="link"        column="link"/>
+        <result property="isRead"      column="is_read"/>
+        <result property="isSeen"      column="is_seen"/>
+        <result property="seenAt"      column="seen_at"/>
+        <result property="createdAt"   column="created_at"/>
+    </resultMap>
+
+    <sql id="columns">
+        id, recipient_id, actor_id, type, message, link, is_read, is_seen, seen_at, created_at
+    </sql>
+
+    <insert id="insert" parameterType="com.kdt.taskflow.domain.Notification" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO notifications (recipient_id, actor_id, type, message, link, is_read, is_seen, seen_at)
+        VALUES (#{recipientId}, #{actorId}, #{type}, #{message}, #{link},
+                COALESCE(#{isRead}, FALSE),
+                COALESCE(#{isSeen}, FALSE),
+                #{seenAt})
+    </insert>
+
+    <select id="findById" resultMap="NotificationResult">
+        SELECT <include refid="columns"/>
+        FROM notifications
+        WHERE id = #{id}
+    </select>
+
+    <select id="findByRecipientId" resultMap="NotificationResult">
+        SELECT <include refid="columns"/>
+        FROM notifications
+        WHERE recipient_id = #{recipientId}
+        <if test="unreadOnly != null and unreadOnly == true">
+            AND is_read = FALSE
+        </if>
+        ORDER BY created_at DESC
+        <if test="limit != null and limit > 0">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+    <select id="countUnreadByRecipientId" resultType="long">
+        SELECT COUNT(*)
+        FROM notifications
+        WHERE recipient_id = #{recipientId}
+          AND is_read = FALSE
+    </select>
+
+    <update id="updateDynamic">
+        UPDATE notifications
+        <set>
+            <if test="isRead != null">
+                is_read = #{isRead},
+            </if>
+            <if test="isSeen != null">
+                is_seen = #{isSeen},
+            </if>
+            <if test="seenAt != null">
+                seen_at = #{seenAt},
+            </if>
+            <if test="message != null and message != ''">
+                message = #{message},
+            </if>
+            <if test="link != null">
+                link = #{link},
+            </if>
+        </set>
+        <where>
+            <choose>
+                <when test="notificationIds != null and notificationIds.size() > 0">
+                    id IN
+                    <foreach item="item" collection="notificationIds" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                    <if test="recipientId != null">
+                        AND recipient_id = #{recipientId}
+                    </if>
+                </when>
+                <when test="recipientId != null">
+                    recipient_id = #{recipientId}
+                </when>
+                <otherwise>
+                    1 = 0
+                </otherwise>
+            </choose>
+        </where>
+    </update>
+
+    <update id="updateSingle" parameterType="com.kdt.taskflow.domain.Notification">
+        UPDATE notifications
+        <set>
+            <if test="recipientId != null">recipient_id = #{recipientId},</if>
+            <if test="actorId != null">actor_id = #{actorId},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="message != null">message = #{message},</if>
+            <if test="link != null">link = #{link},</if>
+            is_read = #{isRead},
+            is_seen = #{isSeen},
+            seen_at = #{seenAt},
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteDynamic">
+        DELETE FROM notifications
+        <where>
+            <choose>
+                <when test="notificationIds != null and notificationIds.size() > 0">
+                    id IN
+                    <foreach item="item" collection="notificationIds" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                    <if test="recipientId != null">
+                        AND recipient_id = #{recipientId}
+                    </if>
+                </when>
+                <when test="recipientId != null">
+                    recipient_id = #{recipientId}
+                </when>
+                <otherwise>
+                    1 = 0
+                </otherwise>
+            </choose>
+        </where>
+    </delete>
+
+    <delete id="deleteById">
+        DELETE FROM notifications WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteExpiredSeenNotifications">
+        <![CDATA[
+        DELETE FROM notifications
+        WHERE (is_seen = TRUE OR is_read = TRUE)
+          AND seen_at IS NOT NULL
+          AND seen_at < #{cutoff}
+        ]]>
+    </delete>
+
+</mapper>
+
