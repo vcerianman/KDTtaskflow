@@ -4,6 +4,9 @@
 FROM eclipse-temurin:17-jdk AS builder
 WORKDIR /app
 
+# Throttle parallel HTTP connections to prevent Maven Central 429 rate-limits
+ENV GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
+
 # Copy Gradle wrapper and configuration files
 COPY gradlew .
 COPY gradle ./gradle
@@ -12,12 +15,12 @@ COPY build.gradle settings.gradle ./
 # Fix Windows CRLF line endings for gradlew and ensure executable permission
 RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
 
-# Download dependencies (cached unless dependencies change)
-RUN ./gradlew dependencies --no-daemon || true
+# Download dependencies (removed '|| true' so failed downloads are never cached)
+RUN ./gradlew dependencies --no-daemon --max-workers=2
 
 # Copy source code and build the executable JAR (skip tests during container build)
 COPY src ./src
-RUN ./gradlew bootJar -x test --no-daemon
+RUN ./gradlew bootJar -x test --no-daemon --max-workers=2
 
 # ==========================================
 # Stage 2: Minimal runtime image
