@@ -80,6 +80,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Long> getAdminAndGodUserIds() {
+        return userMapper.findAdminAndGodUserIds();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<UserResponse> search(Long projectId, UserRole role, String keyword) {
         return userMapper.search(projectId, role, keyword)
                 .stream()

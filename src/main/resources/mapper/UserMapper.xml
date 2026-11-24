@@ -56,6 +56,14 @@
         WHERE email = #{email} AND deleted = false
     </select>
 
+    <select id="findAdminAndGodUserIds" resultType="long">
+        SELECT id
+        FROM app_user
+        WHERE role IN ('ADMIN', 'GOD')
+          AND deleted = false
+        ORDER BY id ASC
+    </select>
+
     <select id="search" resultMap="UserResult">
         SELECT <include refid="columns"/>
         FROM app_user

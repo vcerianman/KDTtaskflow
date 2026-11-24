@@ -20,6 +20,8 @@ public interface UserMapper {
 
     Optional<User> findByEmail(@Param("email") String email);
 
+    List<Long> findAdminAndGodUserIds();
+
     List<User> search(@Param("projectId") Long projectId,
                       @Param("role") UserRole role,
                       @Param("keyword") String keyword);

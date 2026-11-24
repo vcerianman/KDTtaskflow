@@ -43,6 +43,8 @@ public class SecurityConfig {
                         "/api/auth/forgotpassword", "/api/auth/forgot-password").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/appeals").permitAll()
                 .requestMatchers("/api/auth/**").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/users/admin-ids", "/api/users/admins/ids", "/api/users/admins", "/api/users/adminAndGodIds").hasAnyRole("MEMBER", "MANAGER", "ADMIN", "GOD", "BLOCKED")
+                .requestMatchers("/api/notifications/**").hasAnyRole("MEMBER", "MANAGER", "ADMIN", "GOD", "BLOCKED")
                 .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "GOD")
                 .anyRequest().hasAnyRole("MEMBER", "MANAGER", "ADMIN", "GOD")
             )

@@ -46,6 +46,16 @@ public class UserController {
         return userService.search(projectId, role, keyword);
     }
 
+    /**
+     * GET /api/users/admin-ids, /api/users/admins/ids, /api/users/admins
+     * Returns a list of user IDs for all ADMIN and GOD users.
+     * Accessible by any authenticated user, including BLOCKED users.
+     */
+    @GetMapping({"/admin-ids", "/admins/ids", "/admins", "/adminAndGodIds"})
+    public ResponseEntity<List<Long>> getAdminAndGodUserIds() {
+        return ResponseEntity.ok(userService.getAdminAndGodUserIds());
+    }
+
     /** GET /api/users/{id} — Lấy chi tiết 1 user. */
     @GetMapping("/{id}")
     public UserResponse getById(@PathVariable Long id) {

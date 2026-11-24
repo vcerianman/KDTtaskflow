@@ -14,6 +14,8 @@ public interface UserService {
 
     UserResponse getById(Long id);
 
+    List<Long> getAdminAndGodUserIds();
+
     List<UserResponse> search(Long projectId, UserRole role, String keyword);
 
     List<UserResponse> searchAdmin(String username, String email, UserRole role, UserStatus status);
