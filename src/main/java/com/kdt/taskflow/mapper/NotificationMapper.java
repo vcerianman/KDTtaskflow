@@ -15,6 +15,14 @@ public interface NotificationMapper {
 
     Optional<Notification> findById(@Param("id") Long id);
 
+    Optional<Notification> findDuplicate(@Param("recipientId") Long recipientId,
+                                        @Param("type") String type,
+                                        @Param("message") String message,
+                                        @Param("actorId") Long actorId);
+
+    int refreshDuplicate(@Param("id") Long id,
+                         @Param("link") String link);
+
     List<Notification> findByRecipientId(@Param("recipientId") Long recipientId,
                                         @Param("unreadOnly") Boolean unreadOnly,
                                         @Param("limit") Integer limit);
@@ -38,4 +46,3 @@ public interface NotificationMapper {
 
     int deleteExpiredSeenNotifications(@Param("cutoff") OffsetDateTime cutoff);
 }
-

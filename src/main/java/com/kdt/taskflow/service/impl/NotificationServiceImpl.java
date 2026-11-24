@@ -18,8 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
@@ -88,17 +88,37 @@ public class NotificationServiceImpl implements NotificationService {
                 continue;
             }
 
-            Notification notification = new Notification();
-            notification.setRecipientId(recipientId);
-            notification.setActorId(request.actorId());
-            notification.setType(request.type());
-            notification.setMessage(request.message());
-            notification.setLink(request.link());
-            notification.setRead(false);
-            notification.setSeen(false);
-            notification.setSeenAt(null);
+            // Check if duplicate notification already exists with (recipient_id, type, message, actor_id)
+            Optional<Notification> existingOpt = notificationMapper.findDuplicate(
+                    recipientId,
+                    request.type(),
+                    request.message(),
+                    request.actorId()
+            );
 
-            notificationMapper.insert(notification);
+            Notification notification;
+            if (existingOpt.isPresent()) {
+                Notification existing = existingOpt.get();
+                log.info("Duplicate notification found (id={}) for recipient {}. Resetting is_read=false, is_seen=false, seen_at=null, and created_at=now()",
+                        existing.getId(), recipientId);
+
+                notificationMapper.refreshDuplicate(existing.getId(), request.link());
+
+                // Refetch refreshed row with updated created_at and reset flags
+                notification = notificationMapper.findById(existing.getId()).orElse(existing);
+            } else {
+                notification = new Notification();
+                notification.setRecipientId(recipientId);
+                notification.setActorId(request.actorId());
+                notification.setType(request.type());
+                notification.setMessage(request.message());
+                notification.setLink(request.link());
+                notification.setRead(false);
+                notification.setSeen(false);
+                notification.setSeenAt(null);
+
+                notificationMapper.insert(notification);
+            }
 
             NotificationResponse response = NotificationResponse.from(notification);
             results.add(response);
@@ -197,4 +217,3 @@ public class NotificationServiceImpl implements NotificationService {
         return deleted;
     }
 }
-

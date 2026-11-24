@@ -35,6 +35,34 @@
         WHERE id = #{id}
     </select>
 
+    <!-- Check for duplicate notification with matching (recipient_id, type, message, actor_id) -->
+    <select id="findDuplicate" resultMap="NotificationResult">
+        SELECT <include refid="columns"/>
+        FROM notifications
+        WHERE recipient_id = #{recipientId}
+          AND type = #{type}
+          AND message = #{message}
+          AND (
+              (actor_id IS NULL AND #{actorId} IS NULL)
+              OR actor_id = #{actorId}
+          )
+        ORDER BY created_at DESC
+        LIMIT 1
+    </select>
+
+    <!-- Reset duplicate notification: is_read=false, is_seen=false, seen_at=null, created_at=now() -->
+    <update id="refreshDuplicate">
+        UPDATE notifications
+        SET is_read    = FALSE,
+            is_seen    = FALSE,
+            seen_at    = NULL,
+            created_at = NOW()
+            <if test="link != null and link != ''">
+                , link = #{link}
+            </if>
+        WHERE id = #{id}
+    </update>
+
     <select id="findByRecipientId" resultMap="NotificationResult">
         SELECT <include refid="columns"/>
         FROM notifications
@@ -147,4 +175,3 @@
     </delete>
 
 </mapper>
-

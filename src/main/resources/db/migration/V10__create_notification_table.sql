@@ -18,3 +18,5 @@ CREATE INDEX idx_notifications_seen_cleanup
     ON notifications (is_seen, seen_at)
     WHERE is_seen = TRUE;
 
+CREATE INDEX idx_notifications_dedup
+    ON notifications (recipient_id, type, actor_id);
