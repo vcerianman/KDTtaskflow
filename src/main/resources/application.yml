@@ -42,6 +42,7 @@ brevo:
         email: ${BREVO_SENDER_EMAIL:kdttaskflow@gmail.com}
 
 cloudinary:
+    cloud-name: ${CLOUDINARY_CLOUD_NAME:bs5wxybt}
     api-key: ${CLOUDINARY_API_KEY:}
     api-secret: ${CLOUDINARY_API_SECRET:}
     upload-preset: ${CLOUDINARY_UPLOAD_PRESET:}
