@@ -43,9 +43,10 @@ public class MediaServiceImpl implements MediaService {
 
         // Cloudinary requires parameters (excluding file, cloud_name, resource_type, api_key)
         // to be sorted alphabetically by key before appending the API secret.
+        // Dynamic folder mode uses "asset_folder" in the upload signature.
         Map<String, String> paramsToSign = new TreeMap<>();
         if (folder != null) {
-            paramsToSign.put("folder", folder);
+            paramsToSign.put("asset_folder", folder);
         }
         paramsToSign.put("timestamp", String.valueOf(timestamp));
         if (effectiveUploadPreset != null) {
@@ -56,12 +57,12 @@ public class MediaServiceImpl implements MediaService {
                 .map(entry -> entry.getKey() + "=" + entry.getValue())
                 .collect(Collectors.joining("&"));
 
-        String signature = sha1Hex(paramString + apiSecret);
+        String signature = sha1Hex(paramString + apiSecret.trim());
 
         return new MediaSignatureResponse(
                 signature,
                 timestamp,
-                apiKey,
+                apiKey.trim(),
                 effectiveUploadPreset,
                 folder
         );
