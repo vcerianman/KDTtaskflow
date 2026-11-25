@@ -5,26 +5,35 @@
 <mapper namespace="com.kdt.taskflow.mapper.UserMapper">
 
     <resultMap id="UserResult" type="com.kdt.taskflow.domain.User">
-        <id     property="id"        column="id"/>
-        <result property="username"  column="username"/>
-        <result property="email"     column="email"/>
-        <result property="password"  column="password"/>
-        <result property="fullName"  column="full_name"/>
-        <result property="about"     column="about"    typeHandler="com.kdt.taskflow.mapper.typehandler.StringListTypeHandler"/>
-        <result property="projects"  column="projects" typeHandler="com.kdt.taskflow.mapper.typehandler.StringListTypeHandler"/>
-        <result property="role"      column="role"/>
-        <result property="status"    column="status"/>
-        <result property="deleted"   column="deleted"/>
-        <result property="createdAt" column="created_at"/>
-        <result property="updatedAt" column="updated_at"/>
+        <id     property="id"                 column="id"/>
+        <result property="username"           column="username"/>
+        <result property="email"              column="email"/>
+        <result property="password"           column="password"/>
+        <result property="fullName"           column="full_name"/>
+        <result property="about"              column="about"    typeHandler="com.kdt.taskflow.mapper.typehandler.StringListTypeHandler"/>
+        <result property="projects"           column="projects" typeHandler="com.kdt.taskflow.mapper.typehandler.StringListTypeHandler"/>
+        <result property="role"               column="role"/>
+        <result property="status"             column="status"/>
+        <result property="avatarUrl"          column="avatar_url"/>
+        <result property="avatarPublicId"     column="avatar_public_id"/>
+        <result property="introVideoUrl"      column="intro_video_url"/>
+        <result property="introVideoPublicId" column="intro_video_public_id"/>
+        <result property="deleted"            column="deleted"/>
+        <result property="createdAt"          column="created_at"/>
+        <result property="updatedAt"          column="updated_at"/>
     </resultMap>
 
     <sql id="columns">
-        id, username, email, password, full_name, about, projects, role, status, deleted, created_at, updated_at
+        id, username, email, password, full_name, about, projects, role, status,
+        avatar_url, avatar_public_id, intro_video_url, intro_video_public_id,
+        deleted, created_at, updated_at
     </sql>
 
     <insert id="insert" parameterType="com.kdt.taskflow.domain.User" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO app_user (username, email, password, full_name, about, projects, role, status, deleted)
+        INSERT INTO app_user (
+            username, email, password, full_name, about, projects, role, status,
+            avatar_url, avatar_public_id, intro_video_url, intro_video_public_id, deleted
+        )
         VALUES (
             #{username},
             #{email},
@@ -34,6 +43,10 @@
             #{projects, typeHandler=com.kdt.taskflow.mapper.typehandler.StringListTypeHandler},
             #{role},
             #{status},
+            #{avatarUrl},
+            #{avatarPublicId},
+            #{introVideoUrl},
+            #{introVideoPublicId},
             false
         )
     </insert>
@@ -106,15 +119,19 @@
 
     <update id="update" parameterType="com.kdt.taskflow.domain.User">
         UPDATE app_user
-        SET username   = #{username},
-            email      = #{email},
-            password   = #{password},
-            full_name  = #{fullName},
-            about      = #{about, typeHandler=com.kdt.taskflow.mapper.typehandler.StringListTypeHandler},
-            projects   = #{projects, typeHandler=com.kdt.taskflow.mapper.typehandler.StringListTypeHandler},
-            role       = #{role},
-            status     = #{status},
-            updated_at = now()
+        SET username              = #{username},
+            email                 = #{email},
+            password              = #{password},
+            full_name             = #{fullName},
+            about                 = #{about, typeHandler=com.kdt.taskflow.mapper.typehandler.StringListTypeHandler},
+            projects              = #{projects, typeHandler=com.kdt.taskflow.mapper.typehandler.StringListTypeHandler},
+            role                  = #{role},
+            status                = #{status},
+            avatar_url            = #{avatarUrl},
+            avatar_public_id      = #{avatarPublicId},
+            intro_video_url       = #{introVideoUrl},
+            intro_video_public_id = #{introVideoPublicId},
+            updated_at            = now()
         WHERE id = #{id}
     </update>
 

@@ -21,12 +21,20 @@ import java.util.List;
 @Service
 public class UserServiceImpl implements UserService {
 
+    private static final String CLOUDINARY_PREFIX = "https://res.cloudinary.com/bs5wxybt/";
+
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
     public UserServiceImpl(UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
+    }
+
+    private void validateCloudinaryUrl(String url, String fieldName) {
+        if (url != null && !url.isBlank() && !url.startsWith(CLOUDINARY_PREFIX)) {
+            throw new IllegalArgumentException(fieldName + " must be a valid Cloudinary URL");
+        }
     }
 
     private boolean isCallerGod() {
@@ -113,10 +121,14 @@ public class UserServiceImpl implements UserService {
         if (!isSelf) {
             // When updating another user, ONLY the projects field can be modified
             if ((request.email() != null && !request.email().isBlank()) ||
-                (request.fullName() != null && !request.fullName().isBlank()) ||
-                (request.about() != null && !request.about().isEmpty()) ||
-                request.status() != null ||
-                (request.password() != null && !request.password().isBlank())) {
+                    (request.fullName() != null && !request.fullName().isBlank()) ||
+                    (request.about() != null && !request.about().isEmpty()) ||
+                    request.status() != null ||
+                    (request.password() != null && !request.password().isBlank()) ||
+                    (request.avatarUrl() != null && !request.avatarUrl().isBlank()) ||
+                    (request.avatarPublicId() != null && !request.avatarPublicId().isBlank()) ||
+                    (request.introVideoUrl() != null && !request.introVideoUrl().isBlank()) ||
+                    (request.introVideoPublicId() != null && !request.introVideoPublicId().isBlank())) {
                 throw new org.springframework.security.access.AccessDeniedException(
                         "Forbidden: You are only authorized to update projects for other users");
             }
@@ -125,7 +137,8 @@ public class UserServiceImpl implements UserService {
         User existing = userMapper.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cannot find user id=" + id));
 
-        // 1. If email is provided and not empty, check uniqueness and update (only for self)
+        // 1. If email is provided and not empty, check uniqueness and update (only for
+        // self)
         if (isSelf && request.email() != null && !request.email().isBlank()) {
             userMapper.findByEmail(request.email().trim()).ifPresent(u -> {
                 if (!u.getId().equals(id)) {
@@ -155,9 +168,30 @@ public class UserServiceImpl implements UserService {
             existing.setStatus(request.status());
         }
 
-        // 6. If password is provided and not empty, hash/encode and overwrite (only for self)
+        // 6. If password is provided and not empty, hash/encode and overwrite (only for
+        // self)
         if (isSelf && request.password() != null && !request.password().isBlank()) {
             existing.setPassword(passwordEncoder.encode(request.password()));
+        }
+
+        // 7. If avatarUrl is provided, validate and update (only for self)
+        if (isSelf && request.avatarUrl() != null && !request.avatarUrl().isBlank()) {
+            String trimmedAvatarUrl = request.avatarUrl().trim();
+            validateCloudinaryUrl(trimmedAvatarUrl, "Avatar URL");
+            existing.setAvatarUrl(trimmedAvatarUrl);
+            if (request.avatarPublicId() != null && !request.avatarPublicId().isBlank()) {
+                existing.setAvatarPublicId(request.avatarPublicId().trim());
+            }
+        }
+
+        // 8. If introVideoUrl is provided, validate and update (only for self)
+        if (isSelf && request.introVideoUrl() != null && !request.introVideoUrl().isBlank()) {
+            String trimmedVideoUrl = request.introVideoUrl().trim();
+            validateCloudinaryUrl(trimmedVideoUrl, "Intro video URL");
+            existing.setIntroVideoUrl(trimmedVideoUrl);
+            if (request.introVideoPublicId() != null && !request.introVideoPublicId().isBlank()) {
+                existing.setIntroVideoPublicId(request.introVideoPublicId().trim());
+            }
         }
 
         int affected = userMapper.update(existing);
@@ -213,6 +247,24 @@ public class UserServiceImpl implements UserService {
 
         if (request.password() != null && !request.password().isBlank()) {
             existing.setPassword(passwordEncoder.encode(request.password()));
+        }
+
+        if (request.avatarUrl() != null && !request.avatarUrl().isBlank()) {
+            String trimmedAvatarUrl = request.avatarUrl().trim();
+            validateCloudinaryUrl(trimmedAvatarUrl, "Avatar URL");
+            existing.setAvatarUrl(trimmedAvatarUrl);
+            if (request.avatarPublicId() != null && !request.avatarPublicId().isBlank()) {
+                existing.setAvatarPublicId(request.avatarPublicId().trim());
+            }
+        }
+
+        if (request.introVideoUrl() != null && !request.introVideoUrl().isBlank()) {
+            String trimmedVideoUrl = request.introVideoUrl().trim();
+            validateCloudinaryUrl(trimmedVideoUrl, "Intro video URL");
+            existing.setIntroVideoUrl(trimmedVideoUrl);
+            if (request.introVideoPublicId() != null && !request.introVideoPublicId().isBlank()) {
+                existing.setIntroVideoPublicId(request.introVideoPublicId().trim());
+            }
         }
 
         int affected = userMapper.update(existing);

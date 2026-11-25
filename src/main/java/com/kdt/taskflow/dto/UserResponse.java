@@ -16,10 +16,13 @@ public record UserResponse(
         List<String> projects,
         UserRole role,
         UserStatus status,
+        String avatarUrl,
+        String avatarPublicId,
+        String introVideoUrl,
+        String introVideoPublicId,
         boolean deleted,
         OffsetDateTime createdAt,
-        OffsetDateTime updatedAt
-) {
+        OffsetDateTime updatedAt) {
     public static UserResponse from(User u) {
         return new UserResponse(
                 u.getId(),
@@ -30,9 +33,12 @@ public record UserResponse(
                 u.getProjects(),
                 u.getRole(),
                 u.getStatus(),
+                u.getAvatarUrl(),
+                u.getAvatarPublicId(),
+                u.getIntroVideoUrl(),
+                u.getIntroVideoPublicId(),
                 u.isDeleted(),
                 u.getCreatedAt(),
-                u.getUpdatedAt()
-        );
+                u.getUpdatedAt());
     }
 }
