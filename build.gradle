@@ -15,10 +15,9 @@ java {
 }
 
 repositories {
-    maven { url 'https://googleapis.com' }
+    maven { url 'https://maven-central.storage-download.googleapis.com/maven2/' }
     mavenCentral()
 }
-
 dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
