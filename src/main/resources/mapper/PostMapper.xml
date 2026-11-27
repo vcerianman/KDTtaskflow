@@ -90,24 +90,10 @@
                 OR description ILIKE '%' || #{keyword} || '%')
             </if>
             <if test="cursor != null">
-                <choose>
-                    <when test="reply != null">
-                        AND id &gt; #{cursor}
-                    </when>
-                    <otherwise>
-                        AND id &lt; #{cursor}
-                    </otherwise>
-                </choose>
+                AND id &lt; #{cursor}
             </if>
         </where>
-        <choose>
-            <when test="reply != null">
-                ORDER BY id ASC
-            </when>
-            <otherwise>
-                ORDER BY id DESC
-            </otherwise>
-        </choose>
+        ORDER BY id DESC
         LIMIT #{limitPlusOne}
     </select>
 </mapper>
