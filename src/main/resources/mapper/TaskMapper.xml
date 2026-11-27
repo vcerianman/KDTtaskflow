@@ -34,7 +34,33 @@
     </select>
 
     <select id="search" resultMap="TaskResult">
-        <select id="searchPaged" resultMap="TaskResult">
+        SELECT <include refid="columns"/>
+        FROM task
+        <where>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="priority != null">
+                AND priority = #{priority}
+            </if>
+            <if test="projectId != null">
+                AND project_id = #{projectId}
+            </if>
+            <if test="assignee != null and assignee != ''">
+                AND assignee ILIKE '%' || #{assignee} || '%'
+            </if>
+            <if test="assigner != null and assigner != ''">
+                AND assigner ILIKE '%' || #{assigner} || '%'
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (title ILIKE '%' || #{keyword} || '%'
+                OR description ILIKE '%' || #{keyword} || '%')
+            </if>
+        </where>
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="searchPaged" resultMap="TaskResult">
         SELECT <include refid="columns"/>
         FROM task
         <where>
@@ -63,31 +89,6 @@
         </where>
         ORDER BY id ASC
         LIMIT #{limitPlusOne}
-    </select>
-        SELECT <include refid="columns"/>
-        FROM task
-        <where>
-            <if test="status != null">
-                AND status = #{status}
-            </if>
-            <if test="priority != null">
-                AND priority = #{priority}
-            </if>
-            <if test="projectId != null">
-                AND project_id = #{projectId}
-            </if>
-            <if test="assignee != null and assignee != ''">
-                AND assignee ILIKE '%' || #{assignee} || '%'
-            </if>
-            <if test="assigner != null and assigner != ''">
-                AND assigner ILIKE '%' || #{assigner} || '%'
-            </if>
-            <if test="keyword != null and keyword != ''">
-                AND (title ILIKE '%' || #{keyword} || '%'
-                OR description ILIKE '%' || #{keyword} || '%')
-            </if>
-        </where>
-        ORDER BY created_at DESC
     </select>
 
     <update id="update" parameterType="com.kdt.taskflow.domain.Task">
