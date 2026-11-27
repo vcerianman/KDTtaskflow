@@ -62,14 +62,23 @@ public class PostController {
      * - /api/post?keyword=meeting -> search title and description
      */
     @GetMapping({ "/post", "/posts" })
-    public List<PostResponse> search(
+    public ResponseEntity<?> search(
             @RequestParam(required = false) Long projectId,
             @RequestParam(required = false) String author,
             @RequestParam(required = false) Long reply,
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) Boolean topLevelOnly) {
+            @RequestParam(required = false) Boolean topLevelOnly,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(required = false) Integer limit) {
 
-        return postService.search(projectId, author, reply, keyword, topLevelOnly);
+        if (limit != null) {
+            int safeLimit = Math.min(Math.max(limit, 1), 50);
+            return ResponseEntity.ok(
+                    postService.searchPaged(projectId, author, reply, keyword, topLevelOnly, cursor, safeLimit));
+        }
+
+        return ResponseEntity.ok(
+                postService.search(projectId, author, reply, keyword, topLevelOnly));
     }
 
     /**
@@ -123,7 +132,7 @@ public class PostController {
      * GET /api/post/stream/status or /api/posts/stream/status
      * Returns real-time health and active subscriber count for the SSE stream.
      */
-    @GetMapping({"/post/stream/status", "/posts/stream/status"})
+    @GetMapping({ "/post/stream/status", "/posts/stream/status" })
     public ResponseEntity<Map<String, Object>> streamStatus() {
         Map<String, Object> status = new HashMap<>();
         status.put("activeSubscribers", postSseService.getActiveSubscriberCount());

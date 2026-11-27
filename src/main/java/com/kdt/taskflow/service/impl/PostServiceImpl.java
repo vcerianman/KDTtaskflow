@@ -4,6 +4,7 @@ import com.kdt.taskflow.domain.Post;
 import com.kdt.taskflow.domain.PostImage;
 import com.kdt.taskflow.dto.PostImageRequest;
 import com.kdt.taskflow.dto.PostImageResponse;
+import com.kdt.taskflow.dto.PostPageResponse;
 import com.kdt.taskflow.dto.PostRequest;
 import com.kdt.taskflow.dto.PostResponse;
 import com.kdt.taskflow.exception.ResourceNotFoundException;
@@ -33,9 +34,9 @@ public class PostServiceImpl implements PostService {
     private final PostSseService postSseService;
 
     public PostServiceImpl(PostMapper postMapper,
-                           PostImageMapper postImageMapper,
-                           ProjectMapper projectMapper,
-                           PostSseService postSseService) {
+            PostImageMapper postImageMapper,
+            ProjectMapper projectMapper,
+            PostSseService postSseService) {
         this.postMapper = postMapper;
         this.postImageMapper = postImageMapper;
         this.projectMapper = projectMapper;
@@ -126,27 +127,6 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<PostResponse> search(Long projectId, String author, Long reply, String keyword, Boolean topLevelOnly) {
-        List<Post> posts = postMapper.search(projectId, author, reply, keyword, topLevelOnly);
-        if (posts.isEmpty()) {
-            return List.of();
-        }
-
-        List<Long> postIds = posts.stream().map(Post::getId).toList();
-        Map<Long, List<PostImageResponse>> imagesByPostId = postImageMapper.findByPostIds(postIds)
-                .stream()
-                .collect(Collectors.groupingBy(
-                        PostImage::getPostId,
-                        Collectors.mapping(PostImageResponse::from, Collectors.toList())
-                ));
-
-        return posts.stream()
-                .map(post -> PostResponse.from(post, imagesByPostId.getOrDefault(post.getId(), List.of())))
-                .toList();
-    }
-
-    @Override
     @Transactional
     public PostResponse update(Long id, PostRequest request) {
         Post existing = postMapper.findById(id)
@@ -181,7 +161,8 @@ public class PostServiceImpl implements PostService {
             throw new ResourceNotFoundException("Cannot find post id=" + id);
         }
 
-        // Replace images only when explicitly provided in the update request (supports partial/half updates)
+        // Replace images only when explicitly provided in the update request (supports
+        // partial/half updates)
         if (request.images() != null) {
             postImageMapper.deleteByPostId(id);
             savePostImages(id, request.images());
@@ -203,5 +184,52 @@ public class PostServiceImpl implements PostService {
             throw new ResourceNotFoundException("Cannot find post id=" + id);
         }
         postSseService.broadcastDeleted(id, post.getProjectId());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PostResponse> search(Long projectId, String author, Long reply, String keyword, Boolean topLevelOnly) {
+        List<Post> posts = postMapper.search(projectId, author, reply, keyword, topLevelOnly);
+        return mapPostsWithImages(posts);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PostPageResponse searchPaged(
+            Long projectId,
+            String author,
+            Long reply,
+            String keyword,
+            Boolean topLevelOnly,
+            Long cursor,
+            int limit) {
+
+        List<Post> rows = postMapper.searchPaged(
+                projectId, author, reply, keyword, topLevelOnly, cursor, limit + 1);
+
+        boolean hasMore = rows.size() > limit;
+        List<Post> pagePosts = hasMore ? rows.subList(0, limit) : rows;
+
+        List<PostResponse> items = mapPostsWithImages(pagePosts);
+        Long nextCursor = items.isEmpty() ? null : items.get(items.size() - 1).id();
+
+        return new PostPageResponse(items, nextCursor, hasMore);
+    }
+
+    private List<PostResponse> mapPostsWithImages(List<Post> posts) {
+        if (posts == null || posts.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> postIds = posts.stream().map(Post::getId).toList();
+        Map<Long, List<PostImageResponse>> imagesByPostId = postImageMapper.findByPostIds(postIds)
+                .stream()
+                .collect(Collectors.groupingBy(
+                        PostImage::getPostId,
+                        Collectors.mapping(PostImageResponse::from, Collectors.toList())));
+
+        return posts.stream()
+                .map(post -> PostResponse.from(post, imagesByPostId.getOrDefault(post.getId(), List.of())))
+                .toList();
     }
 }

@@ -1,5 +1,6 @@
 package com.kdt.taskflow.service;
 
+import com.kdt.taskflow.dto.PostPageResponse;
 import com.kdt.taskflow.dto.PostRequest;
 import com.kdt.taskflow.dto.PostResponse;
 
@@ -16,4 +17,14 @@ public interface PostService {
     PostResponse update(Long id, PostRequest request);
 
     void delete(Long id);
+
+    PostPageResponse searchPaged(
+            Long projectId,
+            String author,
+            Long reply,
+            String keyword,
+            Boolean topLevelOnly,
+            Long cursor,
+            int limit);
+
 }

@@ -69,4 +69,45 @@
         DELETE FROM post WHERE id = #{id}
     </delete>
 
+    <select id="searchPaged" resultMap="PostResult">
+        SELECT <include refid="columns"/>
+        FROM post
+        <where>
+            <if test="projectId != null">
+                AND project_id = #{projectId}
+            </if>
+            <if test="author != null and author != ''">
+                AND author ILIKE '%' || #{author} || '%'
+            </if>
+            <if test="reply != null">
+                AND reply = #{reply}
+            </if>
+            <if test="topLevelOnly != null and topLevelOnly">
+                AND reply IS NULL
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (title ILIKE '%' || #{keyword} || '%'
+                OR description ILIKE '%' || #{keyword} || '%')
+            </if>
+            <if test="cursor != null">
+                <choose>
+                    <when test="reply != null">
+                        AND id &gt; #{cursor}
+                    </when>
+                    <otherwise>
+                        AND id &lt; #{cursor}
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+        <choose>
+            <when test="reply != null">
+                ORDER BY id ASC
+            </when>
+            <otherwise>
+                ORDER BY id DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limitPlusOne}
+    </select>
 </mapper>

@@ -14,11 +14,21 @@ public interface PostMapper {
 
     Optional<Post> findById(@Param("id") Long id);
 
-    List<Post> search(@Param("projectId") Long projectId,
-                      @Param("author") String author,
-                      @Param("reply") Long reply,
-                      @Param("keyword") String keyword,
-                      @Param("topLevelOnly") Boolean topLevelOnly);
+    List<Post> search(
+            @Param("projectId") Long projectId,
+            @Param("author") String author,
+            @Param("reply") Long reply,
+            @Param("keyword") String keyword,
+            @Param("topLevelOnly") Boolean topLevelOnly);
+
+    List<Post> searchPaged(
+            @Param("projectId") Long projectId,
+            @Param("author") String author,
+            @Param("reply") Long reply,
+            @Param("keyword") String keyword,
+            @Param("topLevelOnly") Boolean topLevelOnly,
+            @Param("cursor") Long cursor,
+            @Param("limitPlusOne") int limitPlusOne);
 
     int update(Post post);
 
