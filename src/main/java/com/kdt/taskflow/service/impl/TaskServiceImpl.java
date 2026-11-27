@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.kdt.taskflow.domain.Task;
 import com.kdt.taskflow.domain.TaskPriority;
 import com.kdt.taskflow.domain.TaskStatus;
+import com.kdt.taskflow.dto.TaskPageResponse;
 import com.kdt.taskflow.dto.TaskRequest;
 import com.kdt.taskflow.dto.TaskResponse;
 import com.kdt.taskflow.exception.ResourceNotFoundException;
@@ -75,7 +76,8 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<TaskResponse> search(TaskStatus status, TaskPriority priority, Long projectId, String assignee, String assigner, String keyword) {
+    public List<TaskResponse> search(TaskStatus status, TaskPriority priority, Long projectId, String assignee,
+            String assigner, String keyword) {
         return taskMapper.search(status, priority, projectId, assignee, assigner, keyword)
                 .stream()
                 .map(TaskResponse::from)
@@ -139,4 +141,30 @@ public class TaskServiceImpl implements TaskService {
             throw new ResourceNotFoundException("Cannot find task id=" + id);
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public TaskPageResponse searchPaged(
+            TaskStatus status,
+            TaskPriority priority,
+            Long projectId,
+            String assignee,
+            String assigner,
+            String keyword,
+            Long cursor,
+            int limit) {
+
+        List<TaskResponse> rows = taskMapper.searchPaged(
+                status, priority, projectId, assignee, assigner, keyword, cursor, limit + 1)
+                .stream()
+                .map(TaskResponse::from)
+                .toList();
+
+        boolean hasMore = rows.size() > limit;
+        List<TaskResponse> items = hasMore ? rows.subList(0, limit) : rows;
+        Long nextCursor = items.isEmpty() ? null : items.get(items.size() - 1).id();
+
+        return new TaskPageResponse(items, nextCursor, hasMore);
+    }
+
 }

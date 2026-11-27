@@ -2,6 +2,7 @@ package com.kdt.taskflow.service;
 
 import com.kdt.taskflow.domain.TaskPriority;
 import com.kdt.taskflow.domain.TaskStatus;
+import com.kdt.taskflow.dto.TaskPageResponse;
 import com.kdt.taskflow.dto.TaskRequest;
 import com.kdt.taskflow.dto.TaskResponse;
 
@@ -14,9 +15,20 @@ public interface TaskService {
 
     List<TaskResponse> getByProjectId(Long projectId);
 
-    List<TaskResponse> search(TaskStatus status, TaskPriority priority, Long projectId, String assignee, String assigner, String keyword);
+    List<TaskResponse> search(TaskStatus status, TaskPriority priority, Long projectId, String assignee,
+            String assigner, String keyword);
 
     TaskResponse update(Long id, TaskRequest request);
 
     void delete(Long id);
+
+    TaskPageResponse searchPaged(
+            TaskStatus status,
+            TaskPriority priority,
+            Long projectId,
+            String assignee,
+            String assigner,
+            String keyword,
+            Long cursor,
+            int limit);
 }

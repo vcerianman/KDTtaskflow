@@ -58,15 +58,25 @@ public class TaskController {
      * /api/tasks?status=IN_PROGRESS&priority=HIGH&projectId=1&assignee=john_doe&keyword=feature
      */
     @GetMapping("/tasks")
-    public List<TaskResponse> search(
+    public ResponseEntity<?> search(
             @RequestParam(required = false) TaskStatus status,
             @RequestParam(required = false) TaskPriority priority,
             @RequestParam(required = false) Long projectId,
             @RequestParam(required = false) String assignee,
             @RequestParam(required = false) String assigner,
-            @RequestParam(required = false) String keyword) {
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(required = false) Integer limit) {
 
-        return taskService.search(status, priority, projectId, assignee, assigner, keyword);
+        if (limit != null) {
+            int safeLimit = Math.min(Math.max(limit, 1), 50);
+            return ResponseEntity.ok(
+                    taskService.searchPaged(status, priority, projectId, assignee, assigner, keyword, cursor,
+                            safeLimit));
+        }
+
+        return ResponseEntity.ok(
+                taskService.search(status, priority, projectId, assignee, assigner, keyword));
     }
 
     /** GET /api/tasks/{id} — get a specific task - ret 404 if not found. */
