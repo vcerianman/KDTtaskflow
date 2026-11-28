@@ -1,15 +1,20 @@
 package com.kdt.taskflow.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.catalina.connector.ClientAbortException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -57,14 +62,50 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
     }
 
+    /** Client ngắt kết nối (đóng tab / reload khi đang mở SSE stream). */
+    @ExceptionHandler({ AsyncRequestNotUsableException.class, ClientAbortException.class })
+    public ResponseEntity<Void> handleClientDisconnect(Exception ex, HttpServletRequest req) {
+        log.debug("Client disconnected at URL: {} ({})", req.getRequestURI(), ex.getMessage());
+        return null;
+    }
+
     /** 500 — lỗi ngoài dự kiến (lưới an toàn cuối cùng). */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleGeneric(Exception ex, HttpServletRequest req) {
+    public ResponseEntity<ApiError> handleGeneric(
+            Exception ex,
+            HttpServletRequest req,
+            HttpServletResponse res) {
+
+        if (isClientDisconnect(ex)
+                || res.isCommitted()
+                || MediaType.TEXT_EVENT_STREAM_VALUE.equalsIgnoreCase(res.getContentType())) {
+            log.debug("Ignoring disconnected/SSE stream exception at URL: {} ({})",
+                    req.getRequestURI(), ex.getMessage());
+            return null;
+        }
+
         log.error("Internal server error at URL: {}", req.getRequestURI(), ex);
         String detailMessage = (ex.getMessage() != null && !ex.getMessage().isBlank())
                 ? ex.getMessage()
                 : "The great server has fallen!";
         ApiError body = ApiError.of(500, "Internal Server Error", detailMessage, req.getRequestURI());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
+    }
+
+    private boolean isClientDisconnect(Throwable ex) {
+        Throwable current = ex;
+        while (current != null) {
+            if (current instanceof ClientAbortException || current instanceof AsyncRequestNotUsableException) {
+                return true;
+            }
+            if (current instanceof IOException ioEx && ioEx.getMessage() != null) {
+                String msg = ioEx.getMessage().toLowerCase();
+                if (msg.contains("broken pipe") || msg.contains("connection reset")) {
+                    return true;
+                }
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 }
