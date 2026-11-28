@@ -51,13 +51,15 @@ public class PostSseServiceImpl implements PostSseService {
 
         emitter.onTimeout(() -> {
             log.warn("SSE client timed out: id={}", subscriberId);
-            emitter.complete();
             subscribers.remove(subscriberId);
+            try {
+                emitter.complete();
+            } catch (Exception ignored) {
+            }
         });
 
         emitter.onError(throwable -> {
             log.warn("SSE client error: id={}, error={}", subscriberId, throwable.getMessage());
-            emitter.complete();
             subscribers.remove(subscriberId);
         });
 
@@ -86,10 +88,6 @@ public class PostSseServiceImpl implements PostSseService {
                 event.eventType(), event.postId(), event.projectId());
 
         subscribers.forEach((id, sub) -> {
-            // Filter: subscriber receives events if:
-            // 1. Subscriber did not specify projectId (subscribes to everything)
-            // 2. Event is not tied to a specific project (global/general announcement)
-            // 3. Subscriber's projectId matches the event's projectId
             boolean shouldReceive = sub.projectId() == null
                     || event.projectId() == null
                     || sub.projectId().equals(event.projectId());
@@ -102,7 +100,6 @@ public class PostSseServiceImpl implements PostSseService {
                             .data(event, MediaType.APPLICATION_JSON));
                 } catch (Exception ex) {
                     log.debug("Error delivering SSE event to subscriber id={}, removing: {}", id, ex.getMessage());
-                    sub.emitter().complete();
                     subscribers.remove(id);
                 }
             }
@@ -129,10 +126,6 @@ public class PostSseServiceImpl implements PostSseService {
         return subscribers.size();
     }
 
-    /**
-     * Periodic heartbeat sent every 25 seconds to keep HTTP connections alive
-     * across reverse proxies (Nginx, ALB, Cloudflare, etc.).
-     */
     @Scheduled(fixedDelay = 25000)
     public void sendHeartbeat() {
         if (subscribers.isEmpty()) {
@@ -147,7 +140,6 @@ public class PostSseServiceImpl implements PostSseService {
                         .data(PostEvent.heartbeat(), MediaType.APPLICATION_JSON));
             } catch (Exception ex) {
                 log.debug("Heartbeat failed for subscriber id={}, removing: {}", id, ex.getMessage());
-                sub.emitter().complete();
                 subscribers.remove(id);
             }
         });

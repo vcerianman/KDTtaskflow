@@ -1,5 +1,6 @@
 package com.kdt.taskflow.security;
 
+import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -31,24 +32,27 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors(Customizer.withDefaults())
-            .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.GET, "/api/ping").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/signup", "/api/appeals",
-                        "/api/forgotpassword", "/api/forgotpassword/**",
-                        "/api/forgot-password", "/api/forgot-password/**",
-                        "/api/auth/forgotpassword", "/api/auth/forgot-password").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/appeals").permitAll()
-                .requestMatchers("/api/auth/**").authenticated()
-                .requestMatchers(HttpMethod.GET, "/api/users/admin-ids", "/api/users/admins/ids", "/api/users/admins", "/api/users/adminAndGodIds").hasAnyRole("MEMBER", "MANAGER", "ADMIN", "GOD", "BLOCKED")
-                .requestMatchers("/api/notifications/**").hasAnyRole("MEMBER", "MANAGER", "ADMIN", "GOD", "BLOCKED")
-                .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "GOD")
-                .anyRequest().hasAnyRole("MEMBER", "MANAGER", "ADMIN", "GOD")
-            )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .cors(Customizer.withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .dispatcherTypeMatchers(DispatcherType.ASYNC, DispatcherType.ERROR).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/ping").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/signup", "/api/appeals",
+                                "/api/forgotpassword", "/api/forgotpassword/**",
+                                "/api/forgot-password", "/api/forgot-password/**",
+                                "/api/auth/forgotpassword", "/api/auth/forgot-password")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/appeals").permitAll()
+                        .requestMatchers("/api/auth/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/users/admin-ids", "/api/users/admins/ids",
+                                "/api/users/admins", "/api/users/adminAndGodIds")
+                        .hasAnyRole("MEMBER", "MANAGER", "ADMIN", "GOD", "BLOCKED")
+                        .requestMatchers("/api/notifications/**")
+                        .hasAnyRole("MEMBER", "MANAGER", "ADMIN", "GOD", "BLOCKED")
+                        .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "GOD")
+                        .anyRequest().hasAnyRole("MEMBER", "MANAGER", "ADMIN", "GOD"))
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

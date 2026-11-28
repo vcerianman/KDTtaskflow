@@ -21,14 +21,14 @@ public class NotificationSseServiceImpl implements NotificationSseService {
     private static final Logger log = LoggerFactory.getLogger(NotificationSseServiceImpl.class);
 
     private static final long SSE_TIMEOUT = 30 * 60 * 1000L; // 30 minutes
-    private static final long RECONNECT_TIME = 3000L;       // 3 seconds
+    private static final long RECONNECT_TIME = 3000L; // 3 seconds
 
     private record SseSubscriber(
             String id,
             SseEmitter emitter,
             Long userId,
-            String username
-    ) {}
+            String username) {
+    }
 
     private final Map<String, SseSubscriber> subscribers = new ConcurrentHashMap<>();
 
@@ -49,13 +49,15 @@ public class NotificationSseServiceImpl implements NotificationSseService {
 
         emitter.onTimeout(() -> {
             log.warn("Notification SSE client timed out: subscriberId={}", subscriberId);
-            emitter.complete();
             subscribers.remove(subscriberId);
+            try {
+                emitter.complete();
+            } catch (Exception ignored) {
+            }
         });
 
         emitter.onError(throwable -> {
             log.warn("Notification SSE client error: subscriberId={}, error={}", subscriberId, throwable.getMessage());
-            emitter.complete();
             subscribers.remove(subscriberId);
         });
 
@@ -65,15 +67,15 @@ public class NotificationSseServiceImpl implements NotificationSseService {
                     "eventType", "CONNECTED",
                     "userId", userId != null ? userId : -1L,
                     "username", username != null ? username : "",
-                    "timestamp", OffsetDateTime.now().toString()
-            );
+                    "timestamp", OffsetDateTime.now().toString());
             emitter.send(SseEmitter.event()
                     .id(subscriberId)
                     .name("CONNECTED")
                     .reconnectTime(RECONNECT_TIME)
                     .data(handshake, MediaType.APPLICATION_JSON));
         } catch (IOException e) {
-            log.warn("Failed to send initial handshake to notification SSE client {}: {}", subscriberId, e.getMessage());
+            log.warn("Failed to send initial handshake to notification SSE client {}: {}", subscriberId,
+                    e.getMessage());
             subscribers.remove(subscriberId);
         }
 
@@ -97,7 +99,6 @@ public class NotificationSseServiceImpl implements NotificationSseService {
                             notification.id(), id, recipientId);
                 } catch (Exception ex) {
                     log.debug("Error delivering notification to subscriber {}, removing: {}", id, ex.getMessage());
-                    sub.emitter().complete();
                     subscribers.remove(id);
                 }
             }
@@ -117,7 +118,8 @@ public class NotificationSseServiceImpl implements NotificationSseService {
     }
 
     /**
-     * Send heartbeat every 25 seconds to keep proxies (Nginx, ALB, Cloudflare, Render) alive.
+     * Send heartbeat every 25 seconds to keep proxies (Nginx, ALB, Cloudflare,
+     * Render) alive.
      */
     @Scheduled(fixedDelay = 25000)
     public void sendHeartbeat() {
@@ -127,8 +129,7 @@ public class NotificationSseServiceImpl implements NotificationSseService {
 
         Map<String, Object> ping = Map.of(
                 "eventType", "HEARTBEAT",
-                "timestamp", OffsetDateTime.now().toString()
-        );
+                "timestamp", OffsetDateTime.now().toString());
 
         subscribers.forEach((id, sub) -> {
             try {
@@ -138,10 +139,8 @@ public class NotificationSseServiceImpl implements NotificationSseService {
                         .data(ping, MediaType.APPLICATION_JSON));
             } catch (Exception ex) {
                 log.debug("Notification heartbeat failed for subscriber {}, removing: {}", id, ex.getMessage());
-                sub.emitter().complete();
                 subscribers.remove(id);
             }
         });
     }
 }
-
